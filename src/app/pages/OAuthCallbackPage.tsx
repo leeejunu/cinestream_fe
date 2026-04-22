@@ -1,0 +1,42 @@
+import { useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router";
+import { authService } from "../services/authService";
+import { useUser } from "../contexts/UserContext";
+import { toast } from "sonner";
+
+export function OAuthCallbackPage() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { refreshUser } = useUser();
+  const called = useRef(false);
+
+  useEffect(() => {
+    if (called.current) return;
+    called.current = true;
+
+    const code = searchParams.get("code");
+    if (!code) {
+      toast.error("Google 로그인에 실패했습니다.");
+      navigate("/login");
+      return;
+    }
+
+    authService
+      .googleLogin(code)
+      .then(() => refreshUser())
+      .then(() => {
+        toast.success("Google 로그인 성공!");
+        navigate("/main");
+      })
+      .catch(() => {
+        toast.error("Google 로그인에 실패했습니다.");
+        navigate("/login");
+      });
+  }, [searchParams, navigate, refreshUser]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900">
+      <div className="text-white text-lg">Google 로그인 처리 중...</div>
+    </div>
+  );
+}
