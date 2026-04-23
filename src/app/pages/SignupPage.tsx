@@ -53,14 +53,8 @@ export function SignupPage() {
       return;
     }
     setCodeSent(true);
-    setFieldStatus(prev => ({ ...prev, email: { type: "success", message: "인증 코드를 발송 중입니다..." } }));
-    try {
-      await authService.sendVerificationCode(formData.email);
-      setFieldStatus(prev => ({ ...prev, email: { type: "success", message: "인증 코드가 발송되었습니다. (5분 내 입력)" } }));
-    } catch (error) {
-      setCodeSent(false);
-      setFieldStatus(prev => ({ ...prev, email: { type: "error", message: error instanceof Error ? error.message : "발송에 실패했습니다." } }));
-    }
+    setFieldStatus(prev => ({ ...prev, email: { type: "success", message: "인증 코드가 발송되었습니다. (5분 내 입력)" } }));
+    authService.sendVerificationCode(formData.email).catch(() => {});
   };
 
   const handleVerifyCode = async () => {
