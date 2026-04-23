@@ -129,6 +129,7 @@ export function CookieManagementPage() {
     if (paymentKey && orderId && amount && cookieAmount) {
       // Toss 결제 성공 → confirm 호출 (Payment 생성 + PG 승인을 한 번에)
       window.history.replaceState({}, "", "/cookies");
+      window.history.pushState({}, "", "/cookies");
       confirmPayment(paymentKey, orderId, parseInt(amount), parseInt(cookieAmount)).then(async () => {
         // 즉시 화면에 반영 (낙관적 업데이트) - 헤더와 동기화
         updateCookies((user?.cookieBalance ?? 0) + parseInt(cookieAmount));
