@@ -34,15 +34,20 @@ apiClient.interceptors.response.use(
     }
 
     if (message === "SESSION_EXPIRED") {
-      alert("다른 곳에서 로그인하여 현재 세션이 종료되었습니다.");
-      tokenStorage.clearTokens();
-      window.location.href = "/login";
+      // OAuth 콜백 페이지에서는 리다이렉트 금지 (googleLogin 흐름 보호)
+      if (!window.location.pathname.startsWith("/oauth2")) {
+        alert("다른 곳에서 로그인하여 현재 세션이 종료되었습니다.");
+        tokenStorage.clearTokens();
+        window.location.href = "/login";
+      }
       return Promise.reject(error);
     }
 
     if (message !== "TOKEN_EXPIRED") {
-      tokenStorage.clearTokens();
-      window.location.href = "/login";
+      if (!window.location.pathname.startsWith("/oauth2")) {
+        tokenStorage.clearTokens();
+        window.location.href = "/login";
+      }
       return Promise.reject(error);
     }
 
