@@ -34,6 +34,10 @@ apiClient.interceptors.response.use(
     }
 
     if (message === "SESSION_EXPIRED") {
+      if (window.location.pathname.includes("/oauth2/callback")) {
+        tokenStorage.clearTokens();
+        return Promise.reject(error);
+      }
       alert("다른 곳에서 로그인하여 현재 세션이 종료되었습니다.");
       tokenStorage.clearTokens();
       window.location.href = "/login";
