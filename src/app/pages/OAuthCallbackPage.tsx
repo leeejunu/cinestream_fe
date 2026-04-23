@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { authService } from "../services/authService";
+import { authService, tokenStorage } from "../services/authService";
 import { useUser } from "../contexts/UserContext";
 import { toast } from "sonner";
 
@@ -21,6 +21,17 @@ export function OAuthCallbackPage() {
       return;
     }
 
+    // 같은 code 재처리 방지 (remount 대비)
+    const processedKey = `oauth_code_${code}`;
+    if (sessionStorage.getItem(processedKey)) {
+      navigate("/main");
+      return;
+    }
+    sessionStorage.setItem(processedKey, "1");
+
+    // 기존 stale 토큰 제거 (SESSION_EXPIRED 인터셉터 간섭 방지)
+    tokenStorage.clearTokens();
+
     authService
       .googleLogin(code)
       .then(() => refreshUser())
@@ -29,6 +40,7 @@ export function OAuthCallbackPage() {
         navigate("/main");
       })
       .catch(() => {
+        sessionStorage.removeItem(processedKey);
         toast.error("Google 로그인에 실패했습니다.");
         navigate("/login");
       });

@@ -243,12 +243,12 @@ export function CartPage() {
                             src={item.imageUrl || getPlaceholderPoster(item.movieId)}
                             alt={item.title}
                             className="w-16 h-24 object-cover rounded-lg shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                            onClick={() => navigate(`/movie/${item.movieId}`)}
+                            onClick={() => item.movieId && navigate(`/movie/${item.movieId}`)}
                           />
                           <div className="flex-1 min-w-0">
                             <h3
                               className={`font-bold text-sm mb-2 cursor-pointer hover:text-purple-500 transition-colors line-clamp-2 ${isDark ? "text-white" : "text-slate-900"}`}
-                              onClick={() => navigate(`/movie/${item.movieId}`)}
+                              onClick={() => item.movieId && navigate(`/movie/${item.movieId}`)}
                             >
                               {item.title}
                             </h3>
@@ -355,13 +355,13 @@ export function CartPage() {
                               src={ticket.movieImageUrl}
                               alt={ticket.movieTitle}
                               className="w-12 h-16 object-cover rounded-lg shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                              onClick={() => navigate(`/movie/${ticket.movieId}`)}
+                              onClick={() => ticket.movieId && navigate(`/movie/${ticket.movieId}`)}
                             />
                             {/* 정보 */}
                             <div className="flex-1 min-w-0">
                               <h4
                                 className={`font-bold text-xs mb-1.5 cursor-pointer hover:text-emerald-500 transition-colors line-clamp-2 ${isDark ? "text-white" : "text-slate-900"}`}
-                                onClick={() => navigate(`/movie/${ticket.movieId}`)}
+                                onClick={() => ticket.movieId && navigate(`/movie/${ticket.movieId}`)}
                               >
                                 {ticket.movieTitle}
                               </h4>

@@ -93,7 +93,7 @@ export function useMovieDetail(id: string | undefined) {
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || isNaN(Number(id))) return;
     setLoading(true);
     movieService.getMovieDetail(Number(id))
       .then(setMovie)
