@@ -52,7 +52,7 @@ export function MovieUploadPage() {
           title: detail.title,
           description: detail.description,
           additionalCookie: detail.additionalCookie,
-          categoryIds: detail.categoryIds,
+          categoryIds: detail.categoryIds ?? [],
         });
       })
       .catch(() => toast.error("영화 정보를 불러오지 못했습니다."))
