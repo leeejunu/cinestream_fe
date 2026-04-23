@@ -47,7 +47,7 @@ export const creatorTokenStorage = {
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const GOOGLE_REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI;
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const BASE_URL = "";
 
 export const authService = {
   getGoogleLoginUrl(): string {

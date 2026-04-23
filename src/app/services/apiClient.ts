@@ -2,7 +2,7 @@ import axios from "axios";
 import { authService, tokenStorage } from "./authService";
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "",
+  baseURL: "",
 });
 
 // 요청 interceptor: 모든 요청에 accessToken 자동 첨부
