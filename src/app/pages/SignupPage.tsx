@@ -52,11 +52,13 @@ export function SignupPage() {
       setFieldStatus(prev => ({ ...prev, email: { type: "error", message: "이메일을 먼저 입력해주세요." } }));
       return;
     }
+    setCodeSent(true);
+    setFieldStatus(prev => ({ ...prev, email: { type: "success", message: "인증 코드를 발송 중입니다..." } }));
     try {
       await authService.sendVerificationCode(formData.email);
-      setCodeSent(true);
       setFieldStatus(prev => ({ ...prev, email: { type: "success", message: "인증 코드가 발송되었습니다. (5분 내 입력)" } }));
     } catch (error) {
+      setCodeSent(false);
       setFieldStatus(prev => ({ ...prev, email: { type: "error", message: error instanceof Error ? error.message : "발송에 실패했습니다." } }));
     }
   };
