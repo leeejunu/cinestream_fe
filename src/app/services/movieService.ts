@@ -307,8 +307,8 @@ export const movieService = {
 
   /** 카테고리 등록 */
   async registerCategory(name: string): Promise<number> {
-    const res = await creatorApiClient.post<{ categoryId: number }>("/api/movies/categories/register", { name });
-    return res.data.categoryId;
+    const res = await creatorApiClient.post<number>("/api/creators/categories", { name });
+    return res.data;
   },
 
   // ── 크리에이터 - 스케줄 관리 ─────────────────────────────────────────────────
