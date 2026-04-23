@@ -39,7 +39,7 @@ export function MovieDetailPage() {
 
   const existingReview = movie?.reviews?.find(r => r.nickname === userInfo?.nickname);
 
-  const purchasedSchedules = tickets.map(t => t.scheduleId);
+  const purchasedSchedules = tickets.filter(t => t.status === "CONFIRMED").map(t => t.scheduleId);
 
   if ((movieLoading && !movie) || (ticketsLoading && tickets.length === 0) || (categoriesLoading && categories.length === 0)) {
     return (
