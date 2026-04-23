@@ -15,17 +15,7 @@ export function TheaterPage() {
   const [duration] = useState(5880); // 98분 = 5880초
 
   useEffect(() => {
-    // 입장 시 쿠키 차감 (이후 백엔드 연동)
-    toast.success("상영관에 입장했습니다. 쿠키 5개가 차감되었습니다.");
-    refreshUser(); // 전역 상태 갱신
-
-    // 상영 시작 10분 전 입장 가능 체크
-    const now = new Date();
-    console.log("입장 시간:", now);
-
-    return () => {
-      toast.info("상영관을 퇴장했습니다.");
-    };
+    refreshUser();
   }, []);
 
   useEffect(() => {
