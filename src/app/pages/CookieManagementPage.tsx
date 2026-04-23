@@ -41,9 +41,8 @@ interface Transaction {
 export function CookieManagementPage() {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const { user, refreshUser } = useUser();
-  const [bonusCookies, setBonusCookies] = useState(0);
-  const cookies = (user?.cookieBalance || 0) + bonusCookies;
+  const { user, refreshUser, updateCookies } = useUser();
+  const cookies = user?.cookieBalance ?? 0;
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [filterStatus, setFilterStatus] = useState("모두");
   const [loading, setLoading] = useState(true);
@@ -131,15 +130,12 @@ export function CookieManagementPage() {
       // Toss 결제 성공 → confirm 호출 (Payment 생성 + PG 승인을 한 번에)
       window.history.replaceState({}, "", "/cookies");
       confirmPayment(paymentKey, orderId, parseInt(amount), parseInt(cookieAmount)).then(async () => {
-        // 즉시 화면에 반영 (낙관적 업데이트)
-        setBonusCookies(parseInt(cookieAmount));
+        // 즉시 화면에 반영 (낙관적 업데이트) - 헤더와 동기화
+        updateCookies((user?.cookieBalance ?? 0) + parseInt(cookieAmount));
         toast.success(`쿠키 ${cookieAmount}개 충전 완료!`);
         fetchTransactions().finally(() => setLoading(false));
         // 백그라운드에서 Kafka 처리 완료 후 실제 잔액으로 동기화
-        setTimeout(async () => {
-          await refreshUser();
-          setBonusCookies(0);
-        }, 5000);
+        setTimeout(() => refreshUser(), 5000);
       });
       return;
     }
@@ -237,14 +233,11 @@ export function CookieManagementPage() {
       // 2. 환불 승인 (Toss PG 취소 처리)
       await apiClient.post(`/api/payments/refund/${refundId}/approve`);
       toast.success(`쿠키 ${refundCookieAmount}개 환불 완료! (${wonAmount.toLocaleString()}원)`);
-      // 즉시 화면에 반영 (낙관적 업데이트)
-      setBonusCookies(prev => prev - refundCookieAmount);
+      // 즉시 화면에 반영 (낙관적 업데이트) - 헤더와 동기화
+      updateCookies((user?.cookieBalance ?? 0) - refundCookieAmount);
       await fetchTransactions();
       // 백그라운드에서 실제 잔액으로 동기화
-      setTimeout(async () => {
-        await refreshUser();
-        setBonusCookies(0);
-      }, 5000);
+      setTimeout(() => refreshUser(), 5000);
     } catch (e: any) {
       toast.error(e.response?.data?.message || "환불 처리 중 오류가 발생했습니다.");
     } finally {
