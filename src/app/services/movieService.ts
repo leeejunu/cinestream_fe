@@ -23,6 +23,7 @@ export interface ApiScheduledMovie {
   title: string;
   startTime: string;
   categoryIds: number[];
+  imageUrl?: string;
 }
 
 export interface ApiScheduleForUser {

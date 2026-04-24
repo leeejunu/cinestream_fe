@@ -140,7 +140,7 @@ export function MainPage() {
                 >
                   <div className="relative aspect-[2/3] rounded-2xl overflow-hidden mb-4 shadow-lg group-hover:shadow-purple-500/20">
                     <img
-                      src={getPlaceholderPoster(movie.movieId)}
+                      src={getImageUrl(movie.imageUrl) || getPlaceholderPoster(movie.movieId)}
                       alt={movie.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
@@ -194,7 +194,7 @@ export function MainPage() {
                 >
                   <div className="flex h-32">
                     <div className="w-24 shrink-0">
-                      <img src={getPlaceholderPoster(movie.movieId)} alt={movie.title} className="w-full h-full object-cover" />
+                      <img src={getImageUrl(movie.imageUrl) || getPlaceholderPoster(movie.movieId)} alt={movie.title} className="w-full h-full object-cover" />
                     </div>
                     <CardContent className="p-4 flex flex-col justify-between min-w-0">
                       <div>
