@@ -40,8 +40,11 @@ export function OAuthCallbackPage() {
         navigate("/main");
       })
       .catch(() => {
-        sessionStorage.removeItem(processedKey);
-        toast.error("Google 로그인에 실패했습니다.");
+        // processedKey를 삭제하지 않음:
+        // 백엔드가 Google에 code를 이미 교환한 뒤 실패하면 code는 소진된 상태.
+        // processedKey를 삭제하면 브라우저 뒤로가기 시 같은 code로 재시도해 invalid_grant 발생.
+        // 유저는 /login으로 돌아가 Google 버튼을 다시 눌러 새 code를 받아야 함.
+        toast.error("Google 로그인에 실패했습니다. 다시 시도해주세요.");
         navigate("/login");
       });
   }, [searchParams, navigate, refreshUser]);
