@@ -46,11 +46,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // OAuth 콜백 페이지에서는 기존 토큰으로 fetch하지 않음
-    // (googleLogin이 기존 세션을 무효화하면서 in-flight 요청이 SESSION_EXPIRED로 돌아와
-    //  navigate 후 pathname이 바뀐 뒤 인터셉터가 강제 로그아웃시키는 race condition 방지)
-    if (!window.location.pathname.startsWith("/oauth2")) {
+    // 토큰이 있을 때만 fetch (OAuth 콜백에서는 clearTokens() 이후라 토큰 없음)
+    if (tokenStorage.getAccessToken()) {
       refreshUser();
+    } else {
+      setLoading(false);
     }
   }, [refreshUser]);
 
