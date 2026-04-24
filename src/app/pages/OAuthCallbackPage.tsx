@@ -36,6 +36,9 @@ export function OAuthCallbackPage() {
 
     authService
       .googleLogin(code)
+      .then(() => {
+        console.log("accessToken:", tokenStorage.getAccessToken());
+      })
       .then(() => refreshUser())
       .then(() => {
         toast.success("Google 로그인 성공!");
