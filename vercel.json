@@ -5,7 +5,11 @@
       "destination": "http://52.78.88.98:8000/api/:path*"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/posters/:path*",
+      "destination": "http://52.78.88.98:8000/posters/:path*"
+    },
+    {
+      "source": "/((?!api/|posters/).*)",
       "destination": "/index.html"
     }
   ]
