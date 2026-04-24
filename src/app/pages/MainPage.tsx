@@ -93,7 +93,7 @@ export function MainPage() {
         {topMovieDetail && (
           <section className="mb-12 relative rounded-3xl overflow-hidden aspect-[21/9] flex items-center shadow-2xl group">
             <img
-              src={getPlaceholderPoster(topMovieDetail.movieId)}
+              src={topMovieDetail.imageUrl || getPlaceholderPoster(topMovieDetail.movieId)}
               alt={topMovieDetail.title}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />

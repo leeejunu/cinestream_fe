@@ -11,6 +11,7 @@ export interface ApiMovieCard {
   title: string;
   averageRating: number | null;
   categoryIds: number[];
+  imageUrl?: string;
   highlightedTitle?: string | null;
   highlightedNickname?: string | null;
 }
@@ -58,6 +59,7 @@ export interface ApiMovieDetail {
   runningTime: number;
   averageRating: number | null;
   cookie: number;
+  imageUrl?: string;
   schedules: ApiScheduleForUser[];
   reviews: ApiReviewSummary[];
 }
@@ -67,6 +69,7 @@ export interface ApiMovieByCreator {
   title: string;
   averageRating: number | null;
   categoryIds: number[];
+  imageUrl?: string;
 }
 
 export interface ApiCategory {

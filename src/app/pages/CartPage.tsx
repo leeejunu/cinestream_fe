@@ -54,7 +54,7 @@ export function CartPage() {
             return {
               ...ticket,
               movieTitle: movie.title,
-              movieImageUrl: getPlaceholderPoster(ticket.movieId),
+              movieImageUrl: movie.imageUrl || getPlaceholderPoster(ticket.movieId),
               cookie: movie.cookie,
             } as ReservedTicketWithMovie;
           } catch {

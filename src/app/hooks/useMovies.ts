@@ -289,7 +289,7 @@ export function useMyPageData() {
           return {
             id: t.movieId,
             title: movie?.title || `영화 #${t.movieId}`,
-            poster: movie ? getPlaceholderPoster(movie.movieId) : "",
+            poster: movie ? (movie.imageUrl || getPlaceholderPoster(movie.movieId)) : "",
           };
         });
       setWatchedMovies(watched);
@@ -334,7 +334,7 @@ export function useMyPageData() {
         const timeB = b.timestamp || new Date(b.date).getTime();
         return timeB - timeA;
       });
-      
+
       setCookieHistory(combinedHistory);
 
       // 3. 리뷰 관리
@@ -404,12 +404,12 @@ export function useCreatorProfile(creatorId: string | undefined, date: string | 
   useEffect(() => {
     if (!creatorId) return;
     setLoading(true);
-    
+
     // 1. 크리에이터의 공개 영화 목록 먼저 조회
     movieService.getPublicMoviesByCreatorId(creatorId)
       .then(async (mvList) => {
         setMovies(mvList);
-        
+
         if (mvList.length > 0) {
           // 2. 첫 번째 영화의 상세 정보를 가져와서 크리에이터 닉네임 확보
           try {
@@ -454,7 +454,7 @@ export function useCreatorProfile(creatorId: string | undefined, date: string | 
       setSchedules([]);
       return;
     }
-    
+
     // 2. 통합된 스케줄 전용 API 호출 (영화 제목, 종료 시간, 좌석 등 한 번에 가져옴)
     movieService.getConfirmedSchedulesByCreator(creatorId, date)
       .then(list => {
@@ -462,14 +462,14 @@ export function useCreatorProfile(creatorId: string | undefined, date: string | 
         const inferred = list.map(s => {
           const start = new Date(s.startTime);
           const end = new Date(s.endTime);
-          
+
           let status = s.status;
           if (!status) {
             if (now < start) status = "SCHEDULED";
             else if (now >= start && now < end) status = "ON_AIR";
             else status = "COMPLETED";
           }
-          
+
           return { ...s, status };
         });
         inferred.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());

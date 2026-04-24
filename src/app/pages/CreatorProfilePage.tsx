@@ -80,7 +80,7 @@ export function CreatorProfilePage() {
               >
                 <div className="aspect-[2/3] relative overflow-hidden">
                   <img
-                    src={getPlaceholderPoster(movie.movieId)}
+                    src={movie.imageUrl || getPlaceholderPoster(movie.movieId)}
                     alt={movie.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />

@@ -42,9 +42,11 @@ export function FloatingTicketWidget() {
         const displayTickets = await Promise.all(
           upcoming.map(async (t) => {
             let title = `영화 #${t.movieId}`;
+            let imageUrl: string | undefined;
             try {
               const detail = await movieService.getMovieDetail(t.movieId);
               title = detail.title;
+              imageUrl = detail.imageUrl;
             } catch {
               // fallback to default title
             }
@@ -64,7 +66,7 @@ export function FloatingTicketWidget() {
               time: timeStr,
               playDate: dateStr,
               status: isOnAir ? ("상영 중" as const) : ("상영 예정" as const),
-              poster: getPlaceholderPoster(t.movieId),
+              poster: imageUrl || getPlaceholderPoster(t.movieId),
             };
           })
         );

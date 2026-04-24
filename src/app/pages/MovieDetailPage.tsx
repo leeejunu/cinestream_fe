@@ -199,7 +199,7 @@ export function MovieDetailPage() {
         <div className="grid md:grid-cols-[300px_1fr] gap-8 mb-12">
           <div className="animate-in fade-in slide-in-from-left-4 duration-500">
             <img
-              src={getPlaceholderPoster(movie.movieId)}
+              src={movie.imageUrl || getPlaceholderPoster(movie.movieId)}
               alt={movie.title}
               className="w-full rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:scale-[1.02] transition-transform duration-500"
             />
