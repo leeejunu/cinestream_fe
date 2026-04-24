@@ -143,8 +143,9 @@ export const getPlaceholderPoster = (movieId: number): string =>
 export const getImageUrl = (imageUrl: string | undefined): string | undefined => {
   if (!imageUrl) return undefined;
   if (imageUrl.startsWith("http")) return imageUrl;
-  const base = import.meta.env.VITE_API_BASE_URL || "";
-  return `${base}${imageUrl}`;
+  const base = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+  const path = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+  return `${base}${path}`;
 };
 
 export interface ApiSettlement {
