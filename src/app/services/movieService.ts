@@ -144,7 +144,7 @@ export const getImageUrl = (imageUrl: string | undefined): string | undefined =>
   if (!imageUrl) return undefined;
   if (imageUrl.startsWith("http")) return imageUrl;
   const path = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
-  return path;
+  return `/files${path}`;
 };
 
 export interface ApiSettlement {

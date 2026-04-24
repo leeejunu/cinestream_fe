@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
           target: apiBaseUrl,
           changeOrigin: true,
         },
-        '/posters': {
+        '/files': {
           target: apiBaseUrl,
           changeOrigin: true,
         },
