@@ -7,7 +7,7 @@ import { ArrowLeft, PlayCircle, Star, Sun, Moon, Film } from "lucide-react";
 import { Header } from "../components/ui/header";
 
 import { useAllPublicMovies } from "../hooks/useMovies";
-import { getPlaceholderPoster } from "../services/movieService";
+import { getPlaceholderPoster, getImageUrl } from "../services/movieService";
 
 export function AllMoviesPage() {
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ export function AllMoviesPage() {
             >
               <div className="aspect-[2/3] relative overflow-hidden">
                 <img
-                  src={movie.imageUrl || getPlaceholderPoster(movie.movieId)}
+                  src={getImageUrl(movie.imageUrl) || getPlaceholderPoster(movie.movieId)}
                   alt={movie.title}
                   className="w-full h-full object-cover group-hover:scale-110 group-hover:opacity-80 transition-all duration-500"
                 />

@@ -7,7 +7,7 @@ import { Badge } from "./badge";
 import { Calendar, Clock, ChevronRight, Ticket } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ticketService } from "../../services/ticketService";
-import { movieService, getPlaceholderPoster } from "../../services/movieService";
+import { movieService, getPlaceholderPoster, getImageUrl } from "../../services/movieService";
 
 interface DisplayTicket {
   id: number;
@@ -66,7 +66,7 @@ export function FloatingTicketWidget() {
               time: timeStr,
               playDate: dateStr,
               status: isOnAir ? ("상영 중" as const) : ("상영 예정" as const),
-              poster: imageUrl || getPlaceholderPoster(t.movieId),
+              poster: getImageUrl(imageUrl) || getPlaceholderPoster(t.movieId),
             };
           })
         );

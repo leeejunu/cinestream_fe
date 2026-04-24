@@ -3,6 +3,7 @@ import apiClient from "../services/apiClient";
 import {
   movieService,
   getPlaceholderPoster,
+  getImageUrl,
   ApiMovieCard,
   ApiScheduledMovie,
   ApiMovieDetail,
@@ -289,7 +290,7 @@ export function useMyPageData() {
           return {
             id: t.movieId,
             title: movie?.title || `영화 #${t.movieId}`,
-            poster: movie ? (movie.imageUrl || getPlaceholderPoster(movie.movieId)) : "",
+            poster: movie ? (getImageUrl(movie.imageUrl) || getPlaceholderPoster(movie.movieId)) : "",
           };
         });
       setWatchedMovies(watched);

@@ -9,7 +9,7 @@ import { Header } from "../components/ui/header";
 import { useMovies, useUpcomingMovies, useAllPublicMovies } from "../hooks/useMovies";
 import { useUser } from "../contexts/UserContext";
 import { authService, creatorTokenStorage } from "../services/authService";
-import { getPlaceholderPoster, movieService, ApiMovieDetail } from "../services/movieService";
+import { getPlaceholderPoster, getImageUrl, movieService, ApiMovieDetail } from "../services/movieService";
 import { toast } from "sonner";
 
 export function MainPage() {
@@ -93,7 +93,7 @@ export function MainPage() {
         {topMovieDetail && (
           <section className="mb-12 relative rounded-3xl overflow-hidden aspect-[21/9] flex items-center shadow-2xl group">
             <img
-              src={topMovieDetail.imageUrl || getPlaceholderPoster(topMovieDetail.movieId)}
+              src={getImageUrl(topMovieDetail.imageUrl) || getPlaceholderPoster(topMovieDetail.movieId)}
               alt={topMovieDetail.title}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />

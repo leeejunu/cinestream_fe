@@ -140,6 +140,13 @@ const POSTER_PLACEHOLDERS = [
 export const getPlaceholderPoster = (movieId: number): string =>
   POSTER_PLACEHOLDERS[movieId % POSTER_PLACEHOLDERS.length];
 
+export const getImageUrl = (imageUrl: string | undefined): string | undefined => {
+  if (!imageUrl) return undefined;
+  if (imageUrl.startsWith("http")) return imageUrl;
+  const base = import.meta.env.VITE_API_BASE_URL || "";
+  return `${base}${imageUrl}`;
+};
+
 export interface ApiSettlement {
   id: number;
   creatorId: string;

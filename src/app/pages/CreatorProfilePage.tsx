@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Calendar } from "../components/ui/calendar";
 import { ArrowLeft, Film, Star, Eye, Calendar as CalendarIcon, Plus, Sun, Moon } from "lucide-react";
 import { Header } from "../components/ui/header";
-import { movieService, getPlaceholderPoster } from "../services/movieService";
+import { movieService, getPlaceholderPoster, getImageUrl } from "../services/movieService";
 import { Creator } from "../data/mockData";
 import { useCreatorProfile, useCategories, useUserTickets } from "../hooks/useMovies";
 
@@ -80,7 +80,7 @@ export function CreatorProfilePage() {
               >
                 <div className="aspect-[2/3] relative overflow-hidden">
                   <img
-                    src={movie.imageUrl || getPlaceholderPoster(movie.movieId)}
+                    src={getImageUrl(movie.imageUrl) || getPlaceholderPoster(movie.movieId)}
                     alt={movie.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />

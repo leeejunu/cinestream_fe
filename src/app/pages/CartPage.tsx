@@ -7,7 +7,7 @@ import { ShoppingCart, Trash2, Cookie, Calendar, Clock, Ticket, CheckCircle2, Us
 import { toast } from "sonner";
 import { Header } from "../components/ui/header";
 import { cartService, CartItemResponse, ticketService, TicketResponse } from "../services/ticketService";
-import { movieService, getPlaceholderPoster } from "../services/movieService";
+import { movieService, getPlaceholderPoster, getImageUrl } from "../services/movieService";
 import { useUser } from "../contexts/UserContext";
 
 interface ReservedTicketWithMovie extends TicketResponse {
@@ -54,7 +54,7 @@ export function CartPage() {
             return {
               ...ticket,
               movieTitle: movie.title,
-              movieImageUrl: movie.imageUrl || getPlaceholderPoster(ticket.movieId),
+              movieImageUrl: getImageUrl(movie.imageUrl) || getPlaceholderPoster(ticket.movieId),
               cookie: movie.cookie,
             } as ReservedTicketWithMovie;
           } catch {
