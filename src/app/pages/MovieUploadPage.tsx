@@ -262,7 +262,7 @@ export function MovieUploadPage() {
                     value={newCategoryName}
                     onChange={e => setNewCategoryName(e.target.value)}
                     onKeyDown={e => {
-                      if (e.key === "Enter") {
+                      if (e.key === "Enter" && !e.nativeEvent.isComposing) {
                         e.preventDefault();
                         handleRegisterCategory(newCategoryName);
                         setNewCategoryName("");
