@@ -14,7 +14,9 @@ export function OAuthCallbackPage() {
     if (called.current) return;
     called.current = true;
 
-    const code = searchParams.get("code");
+    // useSearchParams는 + 를 공백으로 디코딩하므로 raw URL에서 직접 추출
+    const rawCode = window.location.search.match(/[?&]code=([^&]+)/)?.[1];
+    const code = rawCode ? decodeURIComponent(rawCode) : null;
     if (!code) {
       toast.error("Google 로그인에 실패했습니다.");
       navigate("/login");
