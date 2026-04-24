@@ -318,7 +318,7 @@ export function MovieDetailPage() {
                             <ShoppingCart className="w-4 h-4" />
                             장바구니
                           </Button>
-                        ) : schedule.status === "WAITING" || schedule.status === "ON_AIR" ? (
+                        ) : schedule.status === "WAITING" || schedule.status === "ON_AIR" || schedule.status === "TICKETING" ? (
                           <Button
                             className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 rounded-xl shadow-lg shadow-purple-500/20"
                             onClick={() => setSelectedScheduleId(schedule.scheduleId)}
