@@ -29,7 +29,7 @@ export function CreatorDashboard() {
   const [wallet, setWallet] = useState(0);
   const [settlementAmount, setSettlementAmount] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [selectedTime, setSelectedTime] = useState("");
+  const [selectedStartDatetime, setSelectedStartDatetime] = useState("");
   const [selectedTicketingDatetime, setSelectedTicketingDatetime] = useState("");
   const [selectedMovieId, setSelectedMovieId] = useState<string>("");
   const [selectedSchedules, setSelectedSchedules] = useState<number[]>([]);
@@ -123,14 +123,16 @@ export function CreatorDashboard() {
   };
 
   const handleRegisterSchedule = async () => {
-    if (!selectedDate || !selectedTime || !selectedTicketingDatetime || !selectedMovieId) {
-      toast.error("영화, 날짜, 상영 시간, 티켓팅 시작 시간을 모두 선택해주세요.");
+    if (!selectedStartDatetime || !selectedTicketingDatetime || !selectedMovieId) {
+      toast.error("영화, 상영 시작 시간, 티켓팅 시작 시간을 모두 선택해주세요.");
       return;
     }
     const movie = schedulableMovies.find(m => m.movieId.toString() === selectedMovieId);
     if (!movie) return;
 
-    const startTime = `${dateString}T${selectedTime}:00`;
+    const startTime = selectedStartDatetime.length === 16
+      ? `${selectedStartDatetime}:00`
+      : selectedStartDatetime;
     const ticketingTime = selectedTicketingDatetime.length === 16
       ? `${selectedTicketingDatetime}:00`
       : selectedTicketingDatetime;
@@ -142,7 +144,7 @@ export function CreatorDashboard() {
       });
       toast.success("일정이 등록되었습니다.");
       refetchDraftSchedules();
-      setSelectedTime("");
+      setSelectedStartDatetime("");
       setSelectedTicketingDatetime("");
       setSelectedMovieId("");
     } catch (e: any) {
@@ -357,26 +359,13 @@ export function CreatorDashboard() {
                       </div>
 
                       <div className="space-y-3">
-                        <Label className={`font-semibold ${isDark ? "text-white" : "text-slate-700"}`}>상영 시작 시간 (정각)</Label>
-                        <Select value={selectedTime} onValueChange={setSelectedTime}>
-                          <SelectTrigger className={`h-12 transition-colors ${isDark ? "bg-slate-800 border-slate-700 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}>
-                            <SelectValue placeholder="시작 시간을 선택하세요" />
-                          </SelectTrigger>
-                          <SelectContent className={`max-h-[300px] ${isDark ? "bg-slate-800 border-slate-700 text-white" : "bg-white"}`}>
-                            {Array.from({ length: 24 }).map((_, i) => {
-                              const hour = i;
-                              const isPM = hour >= 12;
-                              const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-                              const meridiem = isPM ? "오후" : "오전";
-                              const value = `${hour.toString().padStart(2, "0")}:00`;
-                              return (
-                                <SelectItem key={value} value={value}>
-                                  {`${meridiem} ${displayHour}시`}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
+                        <Label className={`font-semibold ${isDark ? "text-white" : "text-slate-700"}`}>상영 시작 시간</Label>
+                        <Input
+                          type="datetime-local"
+                          value={selectedStartDatetime}
+                          onChange={(e) => setSelectedStartDatetime(e.target.value)}
+                          className={`h-12 transition-colors ${isDark ? "bg-slate-800 border-slate-700 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                        />
                       </div>
 
                       <div className="space-y-3">
