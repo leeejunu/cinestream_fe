@@ -67,8 +67,13 @@ export function MovieDetailPage() {
       toast.error("리뷰 내용을 입력해주세요.");
       return;
     }
+    const movieTicket = tickets.find(t => t.movieId === movie.movieId && t.status === "CONFIRMED");
+    if (!movieTicket) {
+      toast.error("해당 영화의 구매 이력이 없습니다.");
+      return;
+    }
     try {
-      const newReviewData = await reviewService.createReview(movie.movieId, newReviewRating, newReviewText);
+      const newReviewData = await reviewService.createReview(movie.movieId, movieTicket.scheduleId, newReviewRating, newReviewText);
       toast.success("리뷰가 등록되었습니다.");
       
       setMovie(prev => {
