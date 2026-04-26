@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useTheme } from "next-themes";
 import { Button } from "./button";
-import { Film, ArrowLeft, Sun, Moon, Cookie, Plus, ShoppingCart } from "lucide-react";
+import { Film, ArrowLeft, Sun, Moon, Cookie, Plus, ShoppingCart, Ticket } from "lucide-react";
 import { useUser } from "../../contexts/UserContext";
 import { cartService } from "../../services/ticketService";
 
@@ -69,6 +69,17 @@ export function Header({ title, showBackButton, backUrl, children, rightElement 
             {children}
           </div>
           <div className="flex items-center gap-2 shrink-0">
+             {!isCreatorMode && (
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 onClick={() => navigate("/tickets/open")}
+                 className={`gap-1.5 rounded-full px-3 transition-colors ${isDark ? "text-slate-200 hover:bg-slate-800 hover:text-white" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"}`}
+               >
+                 <Ticket className="w-4 h-4 text-purple-500" />
+                 <span className="text-sm font-medium">티켓팅</span>
+               </Button>
+             )}
              {/* Cookie Count Pill (Visible only for non-creators) */}
              {!isCreatorMode && user && (
                <div 

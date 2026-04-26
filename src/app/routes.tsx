@@ -13,6 +13,7 @@ import { SearchPage } from "./pages/SearchPage";
 import { CreatorProfilePage } from "./pages/CreatorProfilePage";
 import { MovieUploadPage } from "./pages/MovieUploadPage";
 import { AllMoviesPage } from "./pages/AllMoviesPage";
+import { OpenSchedulesPage } from "./pages/OpenSchedulesPage";
 import { CreatorLoginPage } from "./pages/CreatorLoginPage";
 import { CreatorJoinPage } from "./pages/CreatorJoinPage";
 import { OAuthCallbackPage } from "./pages/OAuthCallbackPage";
@@ -98,6 +99,10 @@ export const router = createBrowserRouter([
       {
         path: "/cart",
         Component: CartPage,
+      },
+      {
+        path: "/tickets/open",
+        Component: OpenSchedulesPage,
       },
     ]
   },

@@ -36,6 +36,68 @@ export interface PageResult<T> {
   number: number;
 }
 
+/** 백엔드 공용 PageResult: /api/tickets/schedules/open 등 (Spring Page와 달리 number 대신 page 사용) */
+export interface BackendPageResult<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+export type ScheduleStatus =
+  | "CART"
+  | "IN_PROGRESSING"
+  | "TICKETING"
+  | "STREAMING"
+  | "FINISH";
+
+export type SchedulePhase =
+  | "CART_PERIOD"
+  | "PROVISIONAL_PAYMENT"
+  | "TICKETING_PERIOD";
+
+export interface TicketableScheduleResponse {
+  scheduleId: number;
+  movieId: number;
+  creatorId: string;
+  title: string;
+  imageUrl: string | null;
+  startTime: string;
+  endTime: string;
+  ticketingTime: string;
+  cookie: number;
+  status: ScheduleStatus;
+  phase: SchedulePhase;
+  totalSeats: number;
+  /** TICKETING 단계에서만 채워짐, 그 외 null */
+  availableSeats: number | null;
+}
+
+export interface MovieScheduleResponse {
+  scheduleId: number;
+  startTime: string;
+  endTime: string;
+  ticketingTime: string;
+  status: "CART" | "IN_PROGRESSING" | "TICKETING" | "STREAMING";
+  totalSeats: number;
+  /** TICKETING 단계에서만 채워짐, 그 외 null */
+  availableSeats: number | null;
+}
+
+export interface QueueEntryResponse {
+  type: "PURCHASED" | "QUEUED";
+  ticket: TicketResponse | null;
+  scheduleId: number | null;
+  position: number | null;
+}
+
+export interface QueuePositionResponse {
+  scheduleId: number;
+  /** 0이면 대기열에 없음(이탈/완료), 1이상은 본인 순번 */
+  position: number;
+}
+
 export const ticketService = {
   /** 내 티켓 목록 조회 */
   async getMyTickets(page = 0, size = 20): Promise<PageResult<TicketResponse>> {
@@ -60,6 +122,52 @@ export const ticketService = {
   /** 티켓 환불 (CONFIRMED → 삭제, 쿠키 복구) */
   async refundTicket(ticketId: number): Promise<void> {
     await apiClient.post(`/api/tickets/${ticketId}/refund`);
+  },
+
+  /** 티켓팅 진입 가능한 회차 목록 (CART/IN_PROGRESSING/TICKETING) */
+  async listOpenSchedules(params: {
+    status?: ScheduleStatus[];
+    page: number;
+    size: number;
+    sort?: string;
+  }): Promise<BackendPageResult<TicketableScheduleResponse>> {
+    const queryParams: Record<string, string | number | string[]> = {
+      page: params.page,
+      size: params.size,
+    };
+    if (params.sort) queryParams.sort = params.sort;
+    if (params.status && params.status.length > 0) {
+      queryParams.status = params.status.join(",");
+    }
+    const res = await apiClient.get<BackendPageResult<TicketableScheduleResponse>>(
+      "/api/tickets/schedules/open",
+      { params: queryParams },
+    );
+    return res.data;
+  },
+
+  /** 티켓팅 큐 진입: 재고 있으면 즉시 구매, 없으면 대기열 등록 */
+  async enterQueue(scheduleId: number): Promise<QueueEntryResponse> {
+    const res = await apiClient.post<QueueEntryResponse>(
+      `/api/queue/${scheduleId}/enter`,
+    );
+    return res.data;
+  },
+
+  /** 큐 순번 조회 (0=대기열에 없음) */
+  async getQueuePosition(scheduleId: number): Promise<QueuePositionResponse> {
+    const res = await apiClient.get<QueuePositionResponse>(
+      `/api/queue/${scheduleId}/position`,
+    );
+    return res.data;
+  },
+
+  /** 영화별 진행 가능 회차 목록 (CART/IN_PROGRESSING/TICKETING/STREAMING, startTime ASC) */
+  async listSchedulesByMovieId(movieId: number): Promise<MovieScheduleResponse[]> {
+    const res = await apiClient.get<MovieScheduleResponse[]>(
+      `/api/tickets/schedules/movie/${movieId}`,
+    );
+    return res.data;
   },
 };
 

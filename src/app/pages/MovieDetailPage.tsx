@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useTheme } from "next-themes";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Textarea } from "../components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../components/ui/dialog";
-import { Film, Star, Clock, Cookie, User, Calendar, Trash2, Edit2, ShoppingCart } from "lucide-react";
+import { Star, Clock, Cookie, User, Calendar, ShoppingCart, Loader2, Ticket, RefreshCw } from "lucide-react";
+import { cn } from "../components/ui/utils";
 import { toast } from "sonner";
 import { Header } from "../components/ui/header";
 
@@ -14,8 +14,9 @@ import { useMovieDetail, useCategories } from "../hooks/useMovies";
 import { useUser } from "../contexts/UserContext";
 import { useMyTickets } from "../hooks/useTickets";
 import { getPlaceholderPoster, getImageUrl } from "../services/movieService";
-import { cartService } from "../services/ticketService";
+import { cartService, ticketService, MovieScheduleResponse } from "../services/ticketService";
 import { reviewService } from "../services/reviewService";
+import { TicketingQueueModal } from "../components/ticketing/TicketingQueueModal";
 
 export function MovieDetailPage() {
   const navigate = useNavigate();
@@ -28,18 +29,36 @@ export function MovieDetailPage() {
   
   const [newReviewRating, setNewReviewRating] = useState(0);
   const [newReviewText, setNewReviewText] = useState("");
-  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(null);
 
   const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
   const [editReviewRating, setEditReviewRating] = useState(0);
   const [editReviewText, setEditReviewText] = useState("");
 
-  const { user: userInfo, refreshUser: refetchUserMe } = useUser();
-  const ownCookies = userInfo?.cookieBalance || 0;
+  const [schedules, setSchedules] = useState<MovieScheduleResponse[]>([]);
+  const [schedulesLoading, setSchedulesLoading] = useState(false);
+  const [modalScheduleId, setModalScheduleId] = useState<number | null>(null);
 
-  const existingReview = movie?.reviews?.find(r => r.nickname === userInfo?.nickname);
+  const { user: userInfo, refreshUser: refetchUserMe } = useUser();
 
   const purchasedSchedules = tickets.filter(t => t.status === "CONFIRMED").map(t => t.scheduleId);
+
+  const movieIdNum = movie?.movieId;
+  const fetchSchedules = useCallback(async () => {
+    if (!userInfo || movieIdNum == null) return;
+    setSchedulesLoading(true);
+    try {
+      const list = await ticketService.listSchedulesByMovieId(movieIdNum);
+      setSchedules(list);
+    } catch {
+      setSchedules([]);
+    } finally {
+      setSchedulesLoading(false);
+    }
+  }, [userInfo, movieIdNum]);
+
+  useEffect(() => {
+    fetchSchedules();
+  }, [fetchSchedules]);
 
   if ((movieLoading && !movie) || (ticketsLoading && tickets.length === 0) || (categoriesLoading && categories.length === 0)) {
     return (
@@ -163,29 +182,9 @@ export function MovieDetailPage() {
       await cartService.addCartItem(scheduleId);
       toast.success("장바구니에 담았습니다!", { icon: "🛒", action: { label: "장바구니 보기", onClick: () => navigate("/cart") } });
       window.dispatchEvent(new CustomEvent("cart-updated"));
+      fetchSchedules();
     } catch (error: any) {
       const msg = error.response?.data?.message || "장바구니 담기에 실패했습니다.";
-      toast.error(msg);
-    }
-  };
-
-  const handlePurchase = async () => {
-    if (!selectedScheduleId) return;
-    
-    const price = movie.cookie;
-    if (ownCookies < price) {
-      toast.error("쿠키가 부족합니다.");
-      return;
-    }
-
-    try {
-      // TICKETING 상태에서는 큐(queue) 방식으로 처리 - 장바구니에서 가예약 티켓 구매 가능
-      toast.info("장바구니에서 가예약 티켓을 구매할 수 있습니다.", {
-        action: { label: "장바구니 이동", onClick: () => navigate("/cart") },
-      });
-      setSelectedScheduleId(null);
-    } catch (error: any) {
-      const msg = error.response?.data?.message || "티켓 구매에 실패했습니다.";
       toast.error(msg);
     }
   };
@@ -258,80 +257,122 @@ export function MovieDetailPage() {
 
         {/* Schedules */}
         <Card className={`border-none shadow-xl mb-8 transition-colors ${isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"}`}>
-          <CardHeader className="border-b border-slate-800/10">
+          <CardHeader className="border-b border-slate-800/10 flex flex-row items-center justify-between">
             <CardTitle className={`flex items-center gap-2 text-2xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
               <Calendar className="w-6 h-6 text-purple-500" />
               상영 일정
             </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchSchedules}
+              disabled={schedulesLoading || !userInfo}
+              className="gap-1.5"
+            >
+              <RefreshCw className={cn("w-4 h-4", schedulesLoading && "animate-spin")} />
+              새로고침
+            </Button>
           </CardHeader>
           <CardContent className="pt-6">
-            {movie.schedules.length === 0 ? (
-              <p className={`text-center py-8 ${isDark ? "text-slate-500" : "text-slate-400"}`}>현재 예정된 상영 일정이 없습니다.</p>
-            ) : (
-              <div className="grid md:grid-cols-2 gap-4">
-                {movie.schedules.map((schedule) => {
-                  const isPurchased = purchasedSchedules.includes(schedule.scheduleId);
-                  const startDate = new Date(schedule.startTime);
-                  const isCompleted = schedule.status === "COMPLETED";
-                  return (
-                    <div
-                      key={schedule.scheduleId}
-                      className={`p-5 rounded-2xl flex items-center justify-between transition-all border ${
-                        isCompleted
-                          ? (isDark ? "bg-slate-800/20 border-slate-800 opacity-50" : "bg-slate-50 border-slate-100 opacity-50")
-                          : isDark
-                            ? "bg-slate-800/50 border-slate-800 hover:bg-slate-800 hover:border-purple-500/50"
-                            : "bg-slate-50 border-slate-100 hover:bg-purple-50 hover:border-purple-200 shadow-sm"
-                      }`}
-                    >
-                      <div className="space-y-1">
-                        <div className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>
-                          {startDate.toLocaleDateString("ko-KR", { month: "long", day: "numeric" })}{" "}
-                          <span className="text-purple-500">
-                            {startDate.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </div>
-                        <div className={`text-sm font-medium ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                          잔여 좌석: <span className="text-purple-500">{schedule.remainingSeats}</span>석
-                          {schedule.status === "ON_AIR" && (
-                            <Badge className="ml-2 bg-green-600 text-white text-[10px]">상영 중</Badge>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                        {isPurchased ? (
-                          <Button
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 rounded-xl"
-                            onClick={() => navigate(`/theater/${schedule.scheduleId}`)}
-                          >
-                            입장하기
-                          </Button>
-                        ) : isCompleted ? (
-                          <Button disabled className="bg-slate-400 text-white font-bold px-6 rounded-xl">
-                            종료
-                          </Button>
-                        ) : schedule.status === "SCHEDULED" ? (
-                          <Button
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 rounded-xl shadow-lg shadow-purple-500/20 gap-2"
-                            onClick={() => handleAddToCart(schedule.scheduleId)}
-                          >
-                            <ShoppingCart className="w-4 h-4" />
-                            장바구니
-                          </Button>
-                        ) : schedule.status === "WAITING" || schedule.status === "ON_AIR" || schedule.status === "TICKETING" ? (
-                          <Button
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 rounded-xl shadow-lg shadow-purple-500/20"
-                            onClick={() => setSelectedScheduleId(schedule.scheduleId)}
-                          >
-                            티켓 구매
-                          </Button>
-                        ) : null}
-                      </div>
-                    </div>
-                  );
-                })}
+            {!userInfo ? (
+              <div className="flex flex-col items-center gap-3 py-10 text-center">
+                <Ticket className="w-10 h-10 text-muted-foreground/50" />
+                <p className={`text-base font-medium ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                  로그인하고 진행 중인 회차를 확인하세요
+                </p>
+                <Button onClick={() => navigate("/login")} className="bg-purple-600 hover:bg-purple-700 text-white">
+                  로그인하기
+                </Button>
               </div>
-            )}
+            ) : schedulesLoading && schedules.length === 0 ? (
+              <div className="flex justify-center py-10">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (() => {
+              const visible = schedules.filter(s => s.status !== "STREAMING" || purchasedSchedules.includes(s.scheduleId));
+              if (visible.length === 0) {
+                return (
+                  <p className={`text-center py-8 ${isDark ? "text-slate-500" : "text-slate-400"}`}>현재 예정된 상영 일정이 없습니다.</p>
+                );
+              }
+              return (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {visible.map((schedule) => {
+                    const isPurchased = purchasedSchedules.includes(schedule.scheduleId);
+                    const startDate = new Date(schedule.startTime);
+                    const isTicketing = schedule.status === "TICKETING";
+                    const soldOut = isTicketing && (schedule.availableSeats ?? 0) === 0;
+                    return (
+                      <div
+                        key={schedule.scheduleId}
+                        className={`p-5 rounded-2xl flex items-center justify-between transition-all border ${
+                          soldOut
+                            ? (isDark ? "bg-slate-800/20 border-slate-800 opacity-60" : "bg-slate-50 border-slate-100 opacity-60")
+                            : isDark
+                              ? "bg-slate-800/50 border-slate-800 hover:bg-slate-800 hover:border-purple-500/50"
+                              : "bg-slate-50 border-slate-100 hover:bg-purple-50 hover:border-purple-200 shadow-sm"
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className={`font-bold text-lg ${isDark ? "text-white" : "text-slate-900"}`}>
+                            {startDate.toLocaleDateString("ko-KR", { month: "long", day: "numeric" })}{" "}
+                            <span className="text-purple-500">
+                              {startDate.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                            {schedule.status === "STREAMING" && (
+                              <Badge className="ml-2 bg-green-600 text-white text-[10px]">상영 중</Badge>
+                            )}
+                            {soldOut && (
+                              <Badge variant="destructive" className="ml-2 text-[10px]">매진</Badge>
+                            )}
+                          </div>
+                          <div className={`text-sm font-medium ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                            {isTicketing && schedule.availableSeats != null ? (
+                              <>잔여 좌석 <span className="text-purple-500">{schedule.availableSeats}</span>석 / 총 {schedule.totalSeats}석</>
+                            ) : (
+                              <>총 좌석 {schedule.totalSeats}석</>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          {isPurchased ? (
+                            <Button
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 rounded-xl"
+                              onClick={() => navigate(`/theater/${schedule.scheduleId}`)}
+                            >
+                              입장하기
+                            </Button>
+                          ) : schedule.status === "CART" ? (
+                            <Button
+                              className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 rounded-xl shadow-lg shadow-purple-500/20 gap-2"
+                              onClick={() => handleAddToCart(schedule.scheduleId)}
+                            >
+                              <ShoppingCart className="w-4 h-4" />
+                              장바구니
+                            </Button>
+                          ) : schedule.status === "IN_PROGRESSING" ? (
+                            <Button
+                              className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 rounded-xl shadow-lg shadow-amber-500/20"
+                              onClick={() => navigate("/cart")}
+                            >
+                              결제하러 가기
+                            </Button>
+                          ) : isTicketing ? (
+                            <Button
+                              disabled={soldOut}
+                              className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 rounded-xl shadow-lg shadow-purple-500/20"
+                              onClick={() => setModalScheduleId(schedule.scheduleId)}
+                            >
+                              {soldOut ? "매진" : "티켓팅 입장"}
+                            </Button>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </CardContent>
         </Card>
 
@@ -454,54 +495,17 @@ export function MovieDetailPage() {
         </Card>
       </main>
 
-      {/* Confirmation Dialog */}
-      <Dialog open={selectedScheduleId !== null} onOpenChange={(open) => !open && setSelectedScheduleId(null)}>
-        <DialogContent className={`sm:max-w-md border-none shadow-2xl rounded-3xl overflow-hidden p-0 ${isDark ? "bg-slate-900 text-white" : "bg-white text-slate-900"}`}>
-          <div className="bg-purple-600 p-8 text-white relative">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-black mb-1">티켓 구매</DialogTitle>
-              <DialogDescription className="text-purple-100 font-medium opacity-90">
-                해당 상영 일정의 티켓을 구매하시겠습니까? 쿠키가 소모됩니다.
-              </DialogDescription>
-            </DialogHeader>
-          </div>
-          <div className="p-8 space-y-6">
-            <div className={`space-y-4`}>
-              <div className={`flex justify-between items-center p-5 rounded-2xl border transition-colors ${isDark ? "bg-slate-800/50 border-slate-800" : "bg-slate-50 border-slate-100"}`}>
-                <span className={`font-bold ${isDark ? "text-slate-300" : "text-slate-600"}`}>보유 쿠키</span>
-                <div className="flex items-center gap-2">
-                  <Cookie className="w-5 h-5 text-amber-500" />
-                  <span className="font-black text-2xl">{ownCookies}</span>
-                </div>
-              </div>
-                  <div className={`flex justify-between items-center p-5 rounded-2xl border border-purple-500 transition-colors ${isDark ? "bg-purple-500/10" : "bg-purple-50"}`}>
-                <span className="text-purple-600 font-black">소모 쿠키</span>
-                <div className="flex items-center gap-2 text-purple-600">
-                  <Cookie className="w-5 h-5" />
-                  <span className="font-black text-2xl">-{movie.cookie}</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center px-4 pt-2">
-                <span className={`text-sm font-bold opacity-60`}>결제 후 예상 잔액</span>
-                <span className="font-bold text-xl">{ownCookies - movie.cookie} <span className="text-xs opacity-60">쿠키</span></span>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button variant="ghost" className={`flex-1 h-14 rounded-2xl font-bold transition-colors ${isDark ? "text-slate-400 hover:bg-slate-800" : "text-slate-500 hover:bg-slate-100"}`} onClick={() => setSelectedScheduleId(null)}>
-                취소하기
-              </Button>
-              <Button
-                className="flex-1 h-14 rounded-2xl font-black bg-purple-600 hover:bg-purple-700 text-white shadow-xl shadow-purple-500/30 transition-transform active:scale-95"
-                onClick={handlePurchase}
-              >
-                결제 및 구매
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <TicketingQueueModal
+        scheduleId={modalScheduleId}
+        scheduleTitle={movie.title}
+        open={modalScheduleId != null}
+        onClose={() => setModalScheduleId(null)}
+        onPurchaseSuccess={() => {
+          fetchSchedules();
+          refetchTickets();
+          refetchUserMe();
+        }}
+      />
     </div>
   );
 }
