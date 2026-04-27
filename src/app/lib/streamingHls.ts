@@ -1,4 +1,32 @@
-import Hls from "hls.js";
+import Hls, { type HlsConfig, type LoaderCallbacks, type LoaderConfig, type LoaderContext } from "hls.js";
+
+/** http://백엔드 절대 URL → 상대 경로로 변환 (Mixed Content 방지) */
+function rewriteToRelative(url: string): string {
+  try {
+    const u = new URL(url);
+    if (u.protocol === "http:" && u.hostname !== window.location.hostname) {
+      return u.pathname + u.search;
+    }
+  } catch {
+    // 이미 상대 경로인 경우
+  }
+  return url;
+}
+
+class RewriteLoader {
+  private inner: Hls.Loader<LoaderContext>;
+  constructor(config: HlsConfig) {
+    this.inner = new (Hls.DefaultConfig.loader as new (cfg: HlsConfig) => Hls.Loader<LoaderContext>)(config);
+  }
+  load(ctx: LoaderContext, cfg: LoaderConfig, cbs: LoaderCallbacks<LoaderContext>) {
+    ctx.url = rewriteToRelative(ctx.url);
+    this.inner.load(ctx, cfg, cbs);
+  }
+  abort() { this.inner.abort(); }
+  destroy() { this.inner.destroy(); }
+  get stats() { return this.inner.stats; }
+  get context() { return this.inner.context; }
+}
 
 export interface AttachHlsOptions {
   video: HTMLVideoElement;
@@ -52,6 +80,7 @@ export function attachHls({
     hls = new Hls({
       enableWorker: true,
       lowLatencyMode: false,
+      loader: RewriteLoader as unknown as HlsConfig["loader"],
     });
     hls.on(Hls.Events.MANIFEST_PARSED, seekToLiveEdge);
     hls.on(Hls.Events.ERROR, (_event, data) => {
