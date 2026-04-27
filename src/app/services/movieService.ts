@@ -439,6 +439,26 @@ export interface LikedMovie {
 
 const LIKED_MOVIES_KEY = "liked_movies";
 
+// ─── 쿠키 로그 서비스 ──────────────────────────────────────────────────────────
+
+export interface CookieLogItem {
+  id: number;
+  amount: number;
+  paymentId: number | null;
+  refundId: number | null;
+  ticketId: number | null;
+  createAt: string;
+}
+
+export const cookieLogService = {
+  async getMyCookieLogs(): Promise<CookieLogItem[]> {
+    const res = await apiClient.get<CookieLogItem[]>("/api/users/me/cookie-logs");
+    return res.data;
+  },
+};
+
+// ─── 좋아요 서비스 ─────────────────────────────────────────────────────────────
+
 export const likeService = {
   getLikedMovies(): LikedMovie[] {
     try {
