@@ -43,11 +43,9 @@ const parseJson = <T,>(frame: IMessage): T | null => {
  */
 function resolveWsUrl(raw: string): string {
   if (/^wss?:\/\//i.test(raw)) return raw;
-  const base = import.meta.env.VITE_API_BASE_URL || window.location.origin;
-  const baseUrl = new URL(base);
-  const wsScheme = baseUrl.protocol === "https:" ? "wss:" : "ws:";
+  const wsScheme = window.location.protocol === "https:" ? "wss:" : "ws:";
   const path = raw.startsWith("/") ? raw : `/${raw}`;
-  return `${wsScheme}//${baseUrl.host}${path}`;
+  return `${wsScheme}//${window.location.host}${path}`;
 }
 
 export class StreamStomp {
