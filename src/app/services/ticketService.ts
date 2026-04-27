@@ -26,6 +26,9 @@ export interface TicketResponse {
   status: TicketStatus;
   startTime: string;
   endTime: string;
+  /** useTickets 훅이 movieService로 enrich 하는 런타임 필드 */
+  movieTitle?: string;
+  imageUrl?: string;
 }
 
 export interface PageResult<T> {

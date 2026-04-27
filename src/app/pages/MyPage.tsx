@@ -34,8 +34,8 @@ export function MyPage() {
 
   const [profile, setProfile] = useState({
     nickname: "",
-    email: "user@example.com",
-    phone: "010-1234-5678",
+    email: "",
+    phone: "",
     avatar: "",
   });
   const [editProfile, setEditProfile] = useState({ nickname: "", phone: "" });
@@ -139,8 +139,10 @@ export function MyPage() {
   };
 
   const handleChangePassword = () => {
-    toast.success("비밀번호가 변경되었습니다.");
+    toast.info("준비 중인 기능이에요. 곧 제공할게요.");
   };
+
+  const isTicketPast = (endTime: string) => new Date(endTime).getTime() < Date.now();
 
   const handleDeleteAccount = async () => {
     try {
@@ -261,14 +263,23 @@ export function MyPage() {
                                 </div>
                                 <div className="space-y-1">
                                   <div className="flex items-center gap-3">
-                                    <h4 className={`text-xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>{(ticket as any).movieTitle || `영화 #${ticket.movieId}`}</h4>
-                                    <Badge className={`${
-                                      ticket.status === 'RESERVED' ? 'bg-emerald-500/10 text-emerald-500' :
-                                      ticket.status === 'CANCELLED' ? 'bg-red-500/10 text-red-500' :
-                                      'bg-slate-500/10 text-slate-500'
-                                    } border-none font-bold px-2 self-center`}>
-                                      {ticket.status === 'RESERVED' ? '예약됨' : ticket.status === 'CANCELLED' ? '취소됨' : '사용됨'}
-                                    </Badge>
+                                    <h4 className={`text-xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>{ticket.movieTitle || `영화 #${ticket.movieId}`}</h4>
+                                    {(() => {
+                                      const past = isTicketPast(ticket.endTime);
+                                      const tone = ticket.status === 'RESERVED'
+                                        ? 'bg-emerald-500/10 text-emerald-500'
+                                        : past
+                                          ? 'bg-slate-500/10 text-slate-500'
+                                          : 'bg-sky-500/10 text-sky-500';
+                                      const label = ticket.status === 'RESERVED'
+                                        ? '예약됨'
+                                        : past ? '관람완료' : '예매완료';
+                                      return (
+                                        <Badge className={`${tone} border-none font-bold px-2 self-center`}>
+                                          {label}
+                                        </Badge>
+                                      );
+                                    })()}
                                   </div>
                                   <p className={`text-sm font-medium flex items-center gap-2 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                                     <Calendar className="w-3 h-3" />
@@ -287,9 +298,9 @@ export function MyPage() {
                                     </AlertDialogTrigger>
                                     <AlertDialogContent className={`border-none rounded-2xl ${isDark ? "bg-slate-900 text-white" : "bg-white text-slate-900"}`}>
                                       <AlertDialogHeader>
-                                        <AlertDialogTitle className="text-xl font-bold">티켓을 취소하시겠습니까?</AlertDialogTitle>
+                                        <AlertDialogTitle className="text-xl font-bold">예매를 취소하시겠습니까?</AlertDialogTitle>
                                         <AlertDialogDescription className={isDark ? "text-slate-400" : "text-slate-500"}>
-                                          취소 시 소모된 쿠키가 환불됩니다. 이 작업은 되돌릴 수 없습니다.
+                                          결제 전 가예약을 취소합니다. 차감되지 않은 쿠키는 그대로 유지돼요.
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter className="mt-4">
@@ -298,7 +309,33 @@ export function MyPage() {
                                           onClick={() => cancelTicket(ticket.ticketId)}
                                           className="h-12 px-6 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white"
                                         >
-                                          티켓 취소
+                                          예매 취소
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                )}
+                                {ticket.status === 'CONFIRMED' && !isTicketPast(ticket.endTime) && (
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="outline" className={`flex-1 md:flex-none h-12 px-6 rounded-xl font-bold text-red-500 border-red-500/30 hover:bg-red-50 hover:border-red-500 transition-colors`}>
+                                        환불
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className={`border-none rounded-2xl ${isDark ? "bg-slate-900 text-white" : "bg-white text-slate-900"}`}>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle className="text-xl font-bold">티켓을 환불하시겠습니까?</AlertDialogTitle>
+                                        <AlertDialogDescription className={isDark ? "text-slate-400" : "text-slate-500"}>
+                                          소모된 쿠키를 돌려받아요. 환불 후에는 입장이 불가능합니다.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter className="mt-4">
+                                        <AlertDialogCancel className={`h-12 px-6 rounded-xl font-bold border-none ${isDark ? "bg-slate-800" : "bg-slate-100"}`}>그만두기</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => cancelTicket(ticket.ticketId)}
+                                          className="h-12 px-6 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white"
+                                        >
+                                          환불하기
                                         </AlertDialogAction>
                                       </AlertDialogFooter>
                                     </AlertDialogContent>
@@ -306,8 +343,8 @@ export function MyPage() {
                                 )}
                                 <Button
                                   onClick={() => navigate(`/theater/${ticket.scheduleId}`)}
-                                  disabled={ticket.status === 'CANCELLED'}
-                                  className={`flex-1 md:flex-none h-12 px-8 rounded-xl font-black bg-purple-600 hover:bg-purple-700 text-white transition-transform active:scale-95 shadow-md shadow-purple-500/10`}
+                                  disabled={ticket.status === 'RESERVED' || isTicketPast(ticket.endTime)}
+                                  className={`flex-1 md:flex-none h-12 px-8 rounded-xl font-black bg-purple-600 hover:bg-purple-700 text-white transition-transform active:scale-95 shadow-md shadow-purple-500/10 disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
                                   관람하기
                                 </Button>
@@ -422,7 +459,7 @@ export function MyPage() {
                   <CardContent>
                     <div className="space-y-4">
                       {cookieHistory.map((history) => {
-                        const isUpcoming = new Date(history.playDate).getTime() > new Date("2026-03-19T14:20:00").getTime();
+                        const isUpcoming = new Date(history.playDate).getTime() > Date.now();
                         const isRefundable = isUpcoming && history.status === "사용";
                         
                         return (

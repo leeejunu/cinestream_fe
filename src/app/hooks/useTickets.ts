@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ticketService, TicketResponse } from "../services/ticketService";
+import { movieService } from "../services/movieService";
 import { toast } from "sonner";
 
 export function useMyTickets(page = 0, size = 20) {
@@ -11,21 +12,20 @@ export function useMyTickets(page = 0, size = 20) {
     setLoading(true);
     try {
       const result = await ticketService.getMyTickets(page, size);
-      const ticketsWithTitles = await Promise.all(
+      const enriched: TicketResponse[] = await Promise.all(
         result.content.map(async (ticket) => {
           try {
-             // Import movieService if not already, wait, it might not be imported.
-             // Let's just do a dynamic import to avoid altering the top of the file if needed, 
-             // or I can import it manually at the top.
-             const { movieService } = await import("../services/movieService");
-             const movieDetail = await movieService.getMovieDetail(ticket.movieId);
-             return { ...ticket, movieTitle: movieDetail.title };
+            const detail = await movieService.getMovieDetail(ticket.movieId);
+            return { ...ticket, movieTitle: detail.title };
           } catch {
-             return { ...ticket, movieTitle: `영화 #${ticket.movieId}` };
+            return { ...ticket, movieTitle: `영화 #${ticket.movieId}` };
           }
-        })
+        }),
       );
-      setTickets(ticketsWithTitles as any);
+      enriched.sort(
+        (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+      );
+      setTickets(enriched);
       setTotalPages(result.totalPages);
     } catch (error) {
       console.error("Failed to fetch tickets:", error);

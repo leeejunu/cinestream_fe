@@ -282,9 +282,9 @@ export function useMyPageData() {
         movieService.getAllPublicMovies()
       ]);
 
-      // 1. 시청 기록 (사용된 티켓 + 상영 종료된 티켓)
+      // 1. 시청 기록 (상영 종료된 CONFIRMED 티켓)
       const watched = ticketsResult.content
-        .filter(t => t.status === "USED" || new Date(t.endTime) < new Date())
+        .filter(t => new Date(t.endTime) < new Date())
         .map(t => {
           const movie = allMovies.find(m => m.movieId === t.movieId);
           return {
@@ -325,7 +325,7 @@ export function useMyPageData() {
             amount: movie?.cookie || 0,
             date: new Date(t.startTime).toLocaleDateString(),
             playDate: new Date(t.startTime).toLocaleTimeString(),
-            status: t.status === "CANCELLED" ? "환불됨" : "사용",
+            status: "사용",
             type: "usage",
             timestamp: new Date(t.startTime).getTime(), // 정렬용
           };
