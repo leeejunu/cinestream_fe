@@ -40,12 +40,17 @@ const parseJson = <T,>(frame: IMessage): T | null => {
  * 백엔드가 wsEndpoint로 절대 URL이 아닌 상대경로(예: "/ws/stream")를 반환하는 경우
  * VITE_API_BASE_URL(또는 현재 origin) 기준으로 ws[s]:// 절대 URL을 합성한다.
  * @stomp/stompjs는 brokerURL에 절대 ws[s]:// URL을 요구한다.
+ *
+ * Vercel rewrites는 WebSocket upgrade를 프록시하지 못하므로 WS는
+ * Vercel을 우회해 백엔드 호스트(VITE_API_BASE_URL)로 직결해야 한다.
  */
 function resolveWsUrl(raw: string): string {
   if (/^wss?:\/\//i.test(raw)) return raw;
-  const wsScheme = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const apiBase = import.meta.env.VITE_API_BASE_URL || window.location.origin;
+  const baseUrl = new URL(apiBase);
+  const wsScheme = baseUrl.protocol === "https:" ? "wss:" : "ws:";
   const path = raw.startsWith("/") ? raw : `/${raw}`;
-  return `${wsScheme}//${window.location.host}${path}`;
+  return `${wsScheme}//${baseUrl.host}${path}`;
 }
 
 export class StreamStomp {
