@@ -10,6 +10,7 @@ import { useMovies, useUpcomingMovies, useAllPublicMovies } from "../hooks/useMo
 import { useUser } from "../contexts/UserContext";
 import { authService, creatorTokenStorage } from "../services/authService";
 import { getPlaceholderPoster, getImageUrl, movieService, ApiMovieDetail } from "../services/movieService";
+import { RecommendedMoviesSection } from "../components/RecommendedMoviesSection";
 import { toast } from "sonner";
 
 export function MainPage() {
@@ -117,6 +118,8 @@ export function MainPage() {
             </div>
           </section>
         )}
+
+        <RecommendedMoviesSection />
 
         {/* Now Showing Section */}
         <section className="mb-16">
