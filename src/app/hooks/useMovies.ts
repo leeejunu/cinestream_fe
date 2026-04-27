@@ -398,7 +398,6 @@ export function useCreatorProfile(creatorId: string | undefined, date: string | 
   const [movies, setMovies] = useState<ApiMovieByCreator[]>([]);
   const [schedules, setSchedules] = useState<ApiScheduleForCreator[]>([]);
   const [loading, setLoading] = useState(true);
-  const [schedulesLoading, setSchedulesLoading] = useState(false);
 
   useEffect(() => {
     if (!creatorId) return;
@@ -454,7 +453,6 @@ export function useCreatorProfile(creatorId: string | undefined, date: string | 
       return;
     }
 
-    setSchedulesLoading(true);
     movieService.getConfirmedSchedulesByCreator(creatorId, date)
       .then(list => {
         const now = new Date();
@@ -474,9 +472,8 @@ export function useCreatorProfile(creatorId: string | undefined, date: string | 
         inferred.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
         setSchedules(inferred);
       })
-      .catch(() => setSchedules([]))
-      .finally(() => setSchedulesLoading(false));
+      .catch(() => setSchedules([]));
   }, [creatorId, date]);
 
-  return { creator, movies, schedules, loading, schedulesLoading };
+  return { creator, movies, schedules, loading };
 }
