@@ -68,13 +68,26 @@ export type StreamingSessionErrorCode =
   | "INVALID_TOKEN"
   | "UNKNOWN";
 
+function toRelativePath(url: string): string {
+  try {
+    const u = new URL(url);
+    return u.pathname + u.search;
+  } catch {
+    return url;
+  }
+}
+
 export const streamingService = {
   async createSession(scheduleId: number): Promise<StreamingSessionResponse> {
     const res = await apiClient.post<StreamingSessionResponse>(
       "/api/streaming/sessions",
       { scheduleId },
     );
-    return res.data;
+    return {
+      ...res.data,
+      manifestUrl: toRelativePath(res.data.manifestUrl),
+      wsEndpoint: toRelativePath(res.data.wsEndpoint),
+    };
   },
 };
 

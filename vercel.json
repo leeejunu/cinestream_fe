@@ -9,7 +9,11 @@
       "destination": "http://52.78.88.98:8000/files/:path*"
     },
     {
-      "source": "/((?!api/|files/).*)",
+      "source": "/ws/:path*",
+      "destination": "http://52.78.88.98:8000/ws/:path*"
+    },
+    {
+      "source": "/((?!api/|files/|ws/).*)",
       "destination": "/index.html"
     }
   ]
