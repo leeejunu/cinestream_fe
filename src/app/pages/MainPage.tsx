@@ -194,7 +194,16 @@ export function MainPage() {
                 >
                   <div className="flex h-32">
                     <div className="w-24 shrink-0">
-                      <img src={getImageUrl(movie.imageUrl) || getPlaceholderPoster(movie.movieId)} alt={movie.title} className="w-full h-full object-cover" />
+                      <img
+                        src={getImageUrl(movie.imageUrl) || getPlaceholderPoster(movie.movieId)}
+                        alt={movie.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          const fallback = getPlaceholderPoster(movie.movieId);
+                          if (target.src !== fallback) target.src = fallback;
+                        }}
+                      />
                     </div>
                     <CardContent className="p-4 flex flex-col justify-between min-w-0">
                       <div>
