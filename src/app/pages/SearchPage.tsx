@@ -9,7 +9,7 @@ import { ArrowLeft, Search, Compass, Flame, Star, Sparkles, PlayCircle, Sun, Moo
 import { Header } from "../components/ui/header";
 
 import { useSearchMovies, useCategories, useAllPublicMovies } from "../hooks/useMovies";
-import { getPlaceholderPoster, movieService, ApiMovieCard } from "../services/movieService";
+import { getPlaceholderPoster, getImageUrl, movieService, ApiMovieCard } from "../services/movieService";
 
 /**
  * ES에서 받은 highlight 문자열(<em>XXX</em> 포함)을 JSX로 안전하게 렌더링.
@@ -297,7 +297,7 @@ export function SearchPage() {
                   >
                     <div className="aspect-[2/3] relative overflow-hidden">
                       <img
-                        src={getPlaceholderPoster(movie.movieId)}
+                        src={getImageUrl(movie.imageUrl) || getPlaceholderPoster(movie.movieId)}
                         alt={movie.title}
                         className="w-full h-full object-cover group-hover:scale-110 group-hover:opacity-80 transition-all duration-500"
                       />
@@ -368,7 +368,7 @@ export function SearchPage() {
                   >
                     <div className="aspect-[2/3] relative overflow-hidden">
                       <img
-                        src={getPlaceholderPoster(movie.movieId)}
+                        src={getImageUrl(movie.imageUrl) || getPlaceholderPoster(movie.movieId)}
                         alt={movie.title}
                         className="w-full h-full object-cover group-hover:scale-110 group-hover:opacity-80 transition-all duration-500"
                       />
