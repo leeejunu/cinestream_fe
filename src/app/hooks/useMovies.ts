@@ -308,13 +308,13 @@ export function useMyPageData() {
         if (isTicket) {
           const ticket = ticketsResult.content.find(t => t.ticketId === log.ticketId);
           const movie = ticket ? allMovies.find(m => m.movieId === ticket.movieId) : null;
-          movieTitle = movie?.title || (ticket ? `영화 #${ticket.movieId}` : "티켓 구매");
+          movieTitle = movie?.title || (ticket ? `영화 #${ticket.movieId}` : "티켓");
           type = log.amount < 0 ? "usage" : "refund";
-          status = log.amount < 0 ? "사용" : "환불됨";
+          status = log.amount < 0 ? "사용" : "환불";
         } else if (isRefund) {
           movieTitle = "쿠키 환불";
           type = "refund";
-          status = "환불됨";
+          status = "환불";
         } else if (isPayment) {
           movieTitle = "쿠키 충전";
           type = "charge";

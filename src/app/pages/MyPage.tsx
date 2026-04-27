@@ -490,10 +490,9 @@ export function MyPage() {
                             <div className="flex items-center gap-4">
                               <div className="flex items-center gap-2">
                                 <span className={`text-xl font-black ${
-                                  history.status === "환불됨" ? "text-slate-400 line-through" : 
-                                  history.type === "charge" ? "text-emerald-500" : "text-purple-600"
+                                  history.type === "usage" ? "text-purple-600" : "text-emerald-500"
                                 }`}>
-                                  {history.type === "charge" ? "+" : "-"}{history.amount}
+                                  {history.type === "usage" ? "-" : "+"}{history.amount}
                                 </span>
                                 <span className={`text-sm font-bold ${isDark ? "text-slate-500" : "text-slate-400"}`}>쿠키</span>
                               </div>
