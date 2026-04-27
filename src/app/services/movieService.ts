@@ -427,3 +427,63 @@ export const movieService = {
     return Number(val) || 0;
   },
 };
+
+// ─── 좋아요 서비스 ─────────────────────────────────────────────────────────────
+
+export interface LikedMovie {
+  movieId: number;
+  title: string;
+  imageUrl?: string;
+  likedAt: string;
+}
+
+const LIKED_MOVIES_KEY = "liked_movies";
+
+// ─── 쿠키 로그 서비스 ──────────────────────────────────────────────────────────
+
+export interface CookieLogItem {
+  id: number;
+  amount: number;
+  paymentId: number | null;
+  refundId: number | null;
+  ticketId: number | null;
+  createAt: string;
+}
+
+export const cookieLogService = {
+  async getMyCookieLogs(): Promise<CookieLogItem[]> {
+    const res = await apiClient.get<CookieLogItem[]>("/api/users/me/cookie-logs");
+    return res.data;
+  },
+};
+
+// ─── 좋아요 서비스 ─────────────────────────────────────────────────────────────
+
+export const likeService = {
+  getLikedMovies(): LikedMovie[] {
+    try {
+      return JSON.parse(localStorage.getItem(LIKED_MOVIES_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  },
+
+  isLiked(movieId: number): boolean {
+    return this.getLikedMovies().some(m => m.movieId === movieId);
+  },
+
+  async like(movieId: number, title: string, imageUrl?: string): Promise<void> {
+    await apiClient.post(`/api/movies/${movieId}/like`);
+    const movies = this.getLikedMovies();
+    if (!movies.some(m => m.movieId === movieId)) {
+      movies.unshift({ movieId, title, imageUrl, likedAt: new Date().toISOString() });
+      localStorage.setItem(LIKED_MOVIES_KEY, JSON.stringify(movies));
+    }
+  },
+
+  async unlike(movieId: number): Promise<void> {
+    await apiClient.delete(`/api/movies/${movieId}/like`);
+    const movies = this.getLikedMovies().filter(m => m.movieId !== movieId);
+    localStorage.setItem(LIKED_MOVIES_KEY, JSON.stringify(movies));
+  },
+};

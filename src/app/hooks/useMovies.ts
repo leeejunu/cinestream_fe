@@ -264,6 +264,7 @@ export function useConfirmedSchedules(date: string | undefined) {
 import { ticketService } from "../services/ticketService";
 import { paymentService } from "../services/paymentService";
 import { reviewService } from "../services/reviewService";
+import { cookieLogService } from "../services/movieService";
 
 export function useMyPageData() {
   const [watchedMovies, setWatchedMovies] = useState<any[]>([]);
@@ -274,10 +275,9 @@ export function useMyPageData() {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [ticketsResult, payments, refunds, reviewsRes, allMovies] = await Promise.all([
+      const [ticketsResult, cookieLogs, reviewsRes, allMovies] = await Promise.all([
         ticketService.getMyTickets(0, 100),
-        paymentService.getMyPayments(),
-        paymentService.getMyRefunds(),
+        cookieLogService.getMyCookieLogs(),
         reviewService.getMyReviews(),
         movieService.getAllPublicMovies()
       ]);
@@ -295,45 +295,42 @@ export function useMyPageData() {
         });
       setWatchedMovies(watched);
 
-      // 2. 쿠키 사용 내역 (결제 + 환불 + 티켓 구매)
-      const combinedHistory = [
-        ...payments.map(p => ({
-          id: `p-${p.paymentId}`,
-          movieTitle: "쿠키 충전",
-          amount: p.cookieAmount,
-          date: new Date(p.createdAt).toLocaleDateString(),
+      // 2. 쿠키 사용 내역 (cookie-logs API)
+      const combinedHistory = cookieLogs.map(log => {
+        const isTicket = log.ticketId != null;
+        const isRefund = log.refundId != null;
+        const isPayment = log.paymentId != null;
+
+        let movieTitle = "쿠키 충전";
+        let type = "charge";
+        let status = "충전";
+
+        if (isTicket) {
+          const ticket = ticketsResult.content.find(t => t.ticketId === log.ticketId);
+          const movie = ticket ? allMovies.find(m => m.movieId === ticket.movieId) : null;
+          movieTitle = movie?.title || (ticket ? `영화 #${ticket.movieId}` : "티켓");
+          type = log.amount < 0 ? "usage" : "refund";
+          status = log.amount < 0 ? "사용" : "환불";
+        } else if (isRefund) {
+          movieTitle = "쿠키 환불";
+          type = "refund";
+          status = "환불";
+        } else if (isPayment) {
+          movieTitle = "쿠키 충전";
+          type = "charge";
+          status = "충전";
+        }
+
+        return {
+          id: `log-${log.id}`,
+          movieTitle,
+          amount: Math.abs(log.amount),
+          date: new Date(log.createAt).toLocaleDateString(),
           playDate: "-",
-          status: "충전",
-          type: "charge",
-          timestamp: new Date(p.createdAt).getTime()
-        })),
-        ...refunds.map(r => ({
-          id: `r-${r.refundId}`,
-          movieTitle: "쿠키 환불",
-          amount: r.cookieAmount,
-          date: new Date(r.createdAt).toLocaleDateString(),
-          playDate: "-",
-          status: "환불됨",
-          type: "refund",
-          timestamp: new Date(r.createdAt).getTime()
-        })),
-        ...ticketsResult.content.map(t => {
-          const movie = allMovies.find(m => m.movieId === t.movieId) as any;
-          return {
-            id: `t-${t.ticketId}`,
-            movieTitle: movie?.title || `영화 #${t.movieId} 예매`,
-            amount: movie?.cookie || 0,
-            date: new Date(t.startTime).toLocaleDateString(),
-            playDate: new Date(t.startTime).toLocaleTimeString(),
-            status: "사용",
-            type: "usage",
-            timestamp: new Date(t.startTime).getTime(), // 정렬용
-          };
-        })
-      ].sort((a, b) => {
-        const timeA = a.timestamp || new Date(a.date).getTime();
-        const timeB = b.timestamp || new Date(b.date).getTime();
-        return timeB - timeA;
+          status,
+          type,
+          timestamp: new Date(log.createAt).getTime(),
+        };
       });
 
       setCookieHistory(combinedHistory);
@@ -456,7 +453,6 @@ export function useCreatorProfile(creatorId: string | undefined, date: string | 
       return;
     }
 
-    // 2. 통합된 스케줄 전용 API 호출 (영화 제목, 종료 시간, 좌석 등 한 번에 가져옴)
     movieService.getConfirmedSchedulesByCreator(creatorId, date)
       .then(list => {
         const now = new Date();

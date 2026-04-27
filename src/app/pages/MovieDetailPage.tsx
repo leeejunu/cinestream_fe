@@ -5,7 +5,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Textarea } from "../components/ui/textarea";
-import { Star, Clock, Cookie, User, Calendar, ShoppingCart, Loader2, Ticket, RefreshCw } from "lucide-react";
+import { Star, Clock, Cookie, User, Calendar, ShoppingCart, Loader2, Ticket, RefreshCw, Heart } from "lucide-react";
 import { cn } from "../components/ui/utils";
 import { toast } from "sonner";
 import { Header } from "../components/ui/header";
@@ -13,7 +13,7 @@ import { Header } from "../components/ui/header";
 import { useMovieDetail, useCategories } from "../hooks/useMovies";
 import { useUser } from "../contexts/UserContext";
 import { useMyTickets } from "../hooks/useTickets";
-import { getPlaceholderPoster, getImageUrl } from "../services/movieService";
+import { getPlaceholderPoster, getImageUrl, likeService } from "../services/movieService";
 import { cartService, ticketService, MovieScheduleResponse } from "../services/ticketService";
 import { reviewService } from "../services/reviewService";
 import { TicketingQueueModal } from "../components/ticketing/TicketingQueueModal";
@@ -37,6 +37,8 @@ export function MovieDetailPage() {
   const [schedules, setSchedules] = useState<MovieScheduleResponse[]>([]);
   const [schedulesLoading, setSchedulesLoading] = useState(false);
   const [modalScheduleId, setModalScheduleId] = useState<number | null>(null);
+  const [liked, setLiked] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
 
   const { user: userInfo, refreshUser: refetchUserMe } = useUser();
 
@@ -59,6 +61,30 @@ export function MovieDetailPage() {
   useEffect(() => {
     fetchSchedules();
   }, [fetchSchedules]);
+
+  useEffect(() => {
+    if (movie) setLiked(likeService.isLiked(movie.movieId));
+  }, [movie]);
+
+  const handleLike = async () => {
+    if (!movie || likeLoading) return;
+    setLikeLoading(true);
+    try {
+      if (liked) {
+        await likeService.unlike(movie.movieId);
+        setLiked(false);
+        toast.success("좋아요를 취소했습니다.");
+      } else {
+        await likeService.like(movie.movieId, movie.title, movie.imageUrl);
+        setLiked(true);
+        toast.success("좋아요를 눌렀습니다.");
+      }
+    } catch {
+      toast.error("잠시 후 다시 시도해주세요.");
+    } finally {
+      setLikeLoading(false);
+    }
+  };
 
   if ((movieLoading && !movie) || (ticketsLoading && tickets.length === 0) || (categoriesLoading && categories.length === 0)) {
     return (
@@ -225,6 +251,13 @@ export function MovieDetailPage() {
                     {movie.averageRating != null ? movie.averageRating.toFixed(1) : "-"}
                   </span>
                 </div>
+                <button
+                  onClick={handleLike}
+                  disabled={likeLoading}
+                  className={`flex items-center transition-colors ${liked ? "text-pink-500" : "hover:text-pink-400"}`}
+                >
+                  <Heart className={`w-4 h-4 ${liked ? "fill-pink-500 text-pink-500" : ""}`} />
+                </button>
               </div>
               <div className="flex flex-wrap gap-2 mt-4">
                 {movie.categoryIds.map(catId => {

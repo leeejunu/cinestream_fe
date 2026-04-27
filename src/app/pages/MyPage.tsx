@@ -10,7 +10,7 @@ import { Badge } from "../components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../components/ui/alert-dialog";
-import { Film, ArrowLeft, User, Mail, Phone, Camera, Lock, Trash2, Sun, Moon, History, MessageSquare, Star, Coins, Calendar } from "lucide-react";
+import { Film, ArrowLeft, User, Mail, Phone, Camera, Lock, Trash2, Sun, Moon, History, MessageSquare, Star, Coins, Calendar, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "../components/ui/header";
 
@@ -20,6 +20,7 @@ import { useMyTickets } from "../hooks/useTickets";
 import { userService } from "../services/userService";
 import { tokenStorage } from "../services/authService";
 import { reviewService } from "../services/reviewService";
+import { likeService, type LikedMovie, getImageUrl, getPlaceholderPoster } from "../services/movieService";
 
 export function MyPage() {
   const navigate = useNavigate();
@@ -42,6 +43,8 @@ export function MyPage() {
   const ownCookies = userInfo?.cookieBalance || 0;
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [nicknameChecked, setNicknameChecked] = useState(false);
+
+  const [likedMovies, setLikedMovies] = useState<LikedMovie[]>(() => likeService.getLikedMovies());
 
   const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
   const [editReviewText, setEditReviewText] = useState("");
@@ -183,6 +186,10 @@ export function MyPage() {
               <TabsTrigger value="reviews" className={`justify-start px-5 py-4 text-base font-semibold transition-all rounded-xl text-left shadow-none data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white ${isDark ? "text-slate-300 data-[state=inactive]:hover:bg-slate-800" : "text-slate-600 data-[state=inactive]:hover:bg-purple-50"}`}>
                 <MessageSquare className="w-5 h-5 mr-3" />
                 리뷰 관리
+              </TabsTrigger>
+              <TabsTrigger value="likes" className={`justify-start px-5 py-4 text-base font-semibold transition-all rounded-xl text-left shadow-none data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white ${isDark ? "text-slate-300 data-[state=inactive]:hover:bg-slate-800" : "text-slate-600 data-[state=inactive]:hover:bg-purple-50"}`}>
+                <Heart className="w-5 h-5 mr-3" />
+                좋아요한 영화
               </TabsTrigger>
 <TabsTrigger value="account" className={`justify-start px-5 py-4 text-base font-semibold transition-all rounded-xl text-left shadow-none data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white ${isDark ? "text-slate-300 data-[state=inactive]:hover:bg-slate-800" : "text-slate-600 data-[state=inactive]:hover:bg-purple-50"}`}>
                 <Lock className="w-5 h-5 mr-3" />
@@ -483,10 +490,9 @@ export function MyPage() {
                             <div className="flex items-center gap-4">
                               <div className="flex items-center gap-2">
                                 <span className={`text-xl font-black ${
-                                  history.status === "환불됨" ? "text-slate-400 line-through" : 
-                                  history.type === "charge" ? "text-emerald-500" : "text-purple-600"
+                                  history.type === "usage" ? "text-purple-600" : "text-emerald-500"
                                 }`}>
-                                  {history.type === "charge" ? "+" : "-"}{history.amount}
+                                  {history.type === "usage" ? "-" : "+"}{history.amount}
                                 </span>
                                 <span className={`text-sm font-bold ${isDark ? "text-slate-500" : "text-slate-400"}`}>쿠키</span>
                               </div>
@@ -604,6 +610,58 @@ export function MyPage() {
                         );
                       })}
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Liked Movies */}
+              <TabsContent value="likes" className="mt-0 outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <Card className={`transition-all ${isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-sm hover:shadow-md"}`}>
+                  <CardHeader className="flex flex-row items-center justify-between border-b border-slate-800/10 pb-6">
+                    <CardTitle className={`text-2xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>좋아요한 영화</CardTitle>
+                    <Badge variant="outline" className="px-3 py-1 bg-pink-500/10 text-pink-500 border-pink-500/20">
+                      총 {likedMovies.length}편
+                    </Badge>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    {likedMovies.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-16 gap-6 text-center">
+                        <div className={`p-6 rounded-full ${isDark ? "bg-slate-800" : "bg-slate-50"}`}>
+                          <Heart className="w-12 h-12 text-slate-400" />
+                        </div>
+                        <div className="space-y-2">
+                          <p className={`text-xl font-bold ${isDark ? "text-slate-300" : "text-slate-600"}`}>좋아요한 영화가 없습니다.</p>
+                          <p className={`text-sm ${isDark ? "text-slate-500" : "text-slate-400"}`}>마음에 드는 영화에 좋아요를 눌러보세요!</p>
+                        </div>
+                        <Button onClick={() => navigate("/")} className="bg-purple-600 hover:bg-purple-700 text-white font-bold h-12 px-8 rounded-xl">
+                          영화 보러 가기
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        {likedMovies.map((movie) => (
+                          <div
+                            key={movie.movieId}
+                            className="cursor-pointer group flex flex-col"
+                            onClick={() => navigate(`/movie/${movie.movieId}`)}
+                          >
+                            <div className="relative overflow-hidden rounded-xl shadow-md w-full aspect-[2/3] mb-3">
+                              <img
+                                src={getImageUrl(movie.imageUrl) || getPlaceholderPoster(movie.movieId)}
+                                alt={movie.title}
+                                className="w-full h-full object-cover group-hover:scale-110 group-hover:opacity-80 transition-all duration-500"
+                                onError={(e) => { (e.target as HTMLImageElement).src = getPlaceholderPoster(movie.movieId); }}
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <div className="absolute top-2 right-2">
+                                <Heart className="w-5 h-5 fill-pink-500 text-pink-500 drop-shadow" />
+                              </div>
+                            </div>
+                            <p className={`text-sm font-bold truncate text-center transition-colors group-hover:text-purple-500 ${isDark ? "text-white" : "text-slate-900"}`}>{movie.title}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
