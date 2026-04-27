@@ -254,10 +254,9 @@ export function MovieDetailPage() {
                 <button
                   onClick={handleLike}
                   disabled={likeLoading}
-                  className={`flex items-center gap-1 font-bold transition-colors ${liked ? "text-pink-500" : "hover:text-pink-400"}`}
+                  className={`flex items-center transition-colors ${liked ? "text-pink-500" : "hover:text-pink-400"}`}
                 >
                   <Heart className={`w-4 h-4 ${liked ? "fill-pink-500 text-pink-500" : ""}`} />
-                  <span>{liked ? "좋아요 취소" : "좋아요"}</span>
                 </button>
               </div>
               <div className="flex flex-wrap gap-2 mt-4">
