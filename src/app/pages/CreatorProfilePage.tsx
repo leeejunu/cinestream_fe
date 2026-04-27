@@ -24,7 +24,7 @@ export function CreatorProfilePage() {
 
   const dateString = date ? format(date, "yyyy-MM-dd") : undefined;
   const { categories: allCategories } = useCategories();
-  const { creator, movies, schedules, loading } = useCreatorProfile(creatorId, dateString);
+  const { creator, movies, schedules, loading, schedulesLoading } = useCreatorProfile(creatorId, dateString);
   const { tickets } = useUserTickets();
 
   if (loading && !creator) {
@@ -152,9 +152,47 @@ export function CreatorProfilePage() {
                     </h3>
                   </div>
                   <div className="space-y-4">
-                    {schedules.length === 0 ? (
-                      <div className={`p-12 text-center rounded-xl border border-dashed ${isDark ? "bg-slate-900/30 border-slate-800 text-slate-500" : "bg-slate-50 border-slate-200 text-slate-400"}`}>
-                        해당 날짜에 예정된 확정 일정이 없습니다.
+                    {schedulesLoading ? (
+                      <div className="flex justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
+                      </div>
+                    ) : schedules.length === 0 ? (
+                      <div>
+                        <p className={`text-sm mb-4 ${isDark ? "text-slate-400" : "text-slate-500"}`}>해당 날짜에 예정된 확정 일정이 없습니다. 크리에이터의 다른 작품을 확인해보세요.</p>
+                        {movies.length === 0 ? (
+                          <div className={`p-12 text-center rounded-xl border border-dashed ${isDark ? "bg-slate-900/30 border-slate-800 text-slate-500" : "bg-slate-50 border-slate-200 text-slate-400"}`}>
+                            등록된 작품이 없습니다.
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {movies.map((movie) => (
+                              <Card
+                                key={movie.movieId}
+                                className={`cursor-pointer hover:border-purple-500 transition-all overflow-hidden group shadow-sm hover:shadow-md hover:-translate-y-1 ${isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"}`}
+                                onClick={() => navigate(`/movie/${movie.movieId}`)}
+                              >
+                                <div className="aspect-[2/3] relative overflow-hidden">
+                                  <img
+                                    src={getImageUrl(movie.imageUrl) || getPlaceholderPoster(movie.movieId)}
+                                    alt={movie.title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    onError={(e) => { (e.target as HTMLImageElement).src = getPlaceholderPoster(movie.movieId); }}
+                                  />
+                                  <div className="absolute top-2 right-2">
+                                    <Badge className="bg-slate-900/80 backdrop-blur-md shadow-md text-yellow-400 border border-slate-700">
+                                      <Star className="w-3 h-3 mr-1 fill-yellow-400" /> {movie.averageRating != null ? movie.averageRating.toFixed(1) : "-"}
+                                    </Badge>
+                                  </div>
+                                </div>
+                                <CardContent className={`p-3 transition-colors ${isDark ? "bg-slate-900" : "bg-white"}`}>
+                                  <h3 className={`font-bold text-sm truncate transition-colors group-hover:text-purple-500 ${isDark ? "text-white" : "text-slate-900"}`}>
+                                    {movie.title}
+                                  </h3>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       schedules.map((schedule) => {
