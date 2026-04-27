@@ -317,19 +317,24 @@ export function useMyPageData() {
           type: "refund",
           timestamp: new Date(r.createdAt).getTime()
         })),
-        ...ticketsResult.content.map(t => {
-          const movie = allMovies.find(m => m.movieId === t.movieId) as any;
-          return {
-            id: `t-${t.ticketId}`,
-            movieTitle: movie?.title || `영화 #${t.movieId} 예매`,
-            amount: movie?.cookie || 0,
-            date: new Date(t.startTime).toLocaleDateString(),
-            playDate: new Date(t.startTime).toLocaleTimeString(),
-            status: "사용",
-            type: "usage",
-            timestamp: new Date(t.startTime).getTime(), // 정렬용
-          };
-        })
+        ...ticketsResult.content
+          .filter(t => {
+            const movie = allMovies.find(m => m.movieId === t.movieId) as any;
+            return movie?.cookie > 0;
+          })
+          .map(t => {
+            const movie = allMovies.find(m => m.movieId === t.movieId) as any;
+            return {
+              id: `t-${t.ticketId}`,
+              movieTitle: movie?.title || `영화 #${t.movieId} 예매`,
+              amount: movie?.cookie,
+              date: new Date(t.startTime).toLocaleDateString(),
+              playDate: new Date(t.startTime).toLocaleTimeString(),
+              status: "사용",
+              type: "usage",
+              timestamp: new Date(t.startTime).getTime(),
+            };
+          })
       ].sort((a, b) => {
         const timeA = a.timestamp || new Date(a.date).getTime();
         const timeB = b.timestamp || new Date(b.date).getTime();
