@@ -92,7 +92,7 @@ export function MovieDetailPage() {
       return;
     }
     try {
-      const newReviewData = await reviewService.createReview(movie.movieId, movieTicket.scheduleId, newReviewRating, newReviewText);
+      const newReviewData = await reviewService.createReview(movie.movieId, newReviewRating, newReviewText);
       toast.success("리뷰가 등록되었습니다.");
       
       setMovie(prev => {

@@ -20,8 +20,8 @@ export interface MyReviewResponse extends ReviewResponse {
 
 export const reviewService = {
   /** 리뷰 작성 */
-  async createReview(movieId: number, scheduleId: number, rating: number, comment: string): Promise<ReviewResponse> {
-    const res = await apiClient.post<ReviewResponse>("/api/reviews", { movieId, scheduleId, rating, comment });
+  async createReview(movieId: number, rating: number, comment: string): Promise<ReviewResponse> {
+    const res = await apiClient.post<ReviewResponse>("/api/reviews", { movieId, rating, comment });
     return res.data;
   },
 
