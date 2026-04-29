@@ -17,7 +17,7 @@ import { authService } from "../services/authService";
 import creatorApiClient from "../services/creatorApiClient";
 import { movieService, getImageUrl, getPlaceholderPoster } from "../services/movieService";
 
-import { useCreatorMovieList, useSettlements, useDraftSchedules, useSchedulableMovies } from "../hooks/useMovies";
+import { useCreatorMovieList, useSettlements, useDraftSchedules, useSchedulableMovies, useConfirmedSchedules } from "../hooks/useMovies";
 
 export function CreatorDashboard() {
   const navigate = useNavigate();
@@ -40,6 +40,7 @@ export function CreatorDashboard() {
     : undefined;
 
   const { schedules, setSchedules, refetch: refetchDraftSchedules } = useDraftSchedules(dateString);
+  const { schedules: confirmedSchedules } = useConfirmedSchedules(dateString);
   const { movies: schedulableMovies, refetch: refetchSchedulableMovies } = useSchedulableMovies();
 
   useEffect(() => {
@@ -473,7 +474,26 @@ export function CreatorDashboard() {
                           )}
                         </div>
                       ))}
-                      {schedules.length === 0 && (
+                      {confirmedSchedules.map((item) => (
+                        <div
+                          key={`confirmed-${item.scheduleId}`}
+                          className={`p-4 rounded-xl border flex justify-between items-center transition-all ${isDark ? "bg-slate-800/50 border-slate-700" : "bg-slate-50 border-slate-200"}`}
+                        >
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className={`font-bold transition-colors ${isDark ? "text-white" : "text-slate-900"}`}>{item.title}</div>
+                              <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">확정</Badge>
+                            </div>
+                            <div className={`text-sm font-medium flex items-center gap-1.5 ${isDark ? "text-slate-400" : "text-purple-600"}`}>
+                              <Clock className="w-3.5 h-3.5" />
+                              {new Date(item.startTime).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
+                              {" ~ "}
+                              {new Date(item.endTime).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {schedules.length === 0 && confirmedSchedules.length === 0 && (
                         <p className={`text-center py-8 text-sm ${isDark ? "text-slate-500" : "text-slate-400"}`}>
                           해당 날짜에 편성된 일정이 없습니다.
                         </p>
