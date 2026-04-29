@@ -166,12 +166,12 @@ export function CreatorProfilePage() {
                         
                         // 버튼 텍스트 및 상태 결정
                         let buttonText = "";
-                        if (hasTicket) {
+                        if (hasTicket && schedule.status !== "COMPLETED") {
                           buttonText = "입장하기";
                         } else if (schedule.status === "ON_AIR") {
                           buttonText = "구매하기";
-                        } else if (schedule.status === "SCHEDULED" || schedule.status === "WAITING") {
-                          buttonText = "예매하기";
+                        } else if (schedule.status === "SCHEDULED") {
+                          buttonText = ((schedule as any).remainingSeats ?? 1) > 0 ? "예매하기" : "매진";
                         }
 
                         return (
@@ -195,9 +195,16 @@ export function CreatorProfilePage() {
                                   </div>
                                 </div>
                                 {buttonText && (
-                                  <Button className={`w-full sm:w-auto font-bold shadow-lg px-8 h-11 rounded-xl ${
-                                    hasTicket ? "bg-green-600 hover:bg-green-700 text-white shadow-green-500/20" : "bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/20"
-                                  }`}>
+                                  <Button
+                                    disabled={buttonText === "매진"}
+                                    className={`w-full sm:w-auto font-bold shadow-lg px-8 h-11 rounded-xl ${
+                                      buttonText === "매진"
+                                        ? "bg-slate-400 text-white cursor-not-allowed opacity-60 shadow-none"
+                                        : hasTicket
+                                        ? "bg-green-600 hover:bg-green-700 text-white shadow-green-500/20"
+                                        : "bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/20"
+                                    }`}
+                                  >
                                     {buttonText}
                                   </Button>
                                 )}
