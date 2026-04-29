@@ -20,7 +20,7 @@ export function CartPage() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const { user, refreshUser } = useUser();
+  const { user, refreshUser, updateCookies } = useUser();
 
   const [cartItems, setCartItems] = useState<CartItemResponse[]>([]);
   const [cartCounts, setCartCounts] = useState<Record<number, number>>({});
@@ -148,6 +148,7 @@ export function CartPage() {
       }
       setReservedTickets((prev) => prev.filter((t) => !selectedTicketIds.has(t.ticketId)));
       setSelectedTicketIds(new Set());
+      updateCookies((user?.cookieBalance ?? 0) - totalTicketCookies);
       refreshUser();
       toast.success(`${targets.length}건 티켓 구매 완료!`, { icon: "🎟️" });
       window.dispatchEvent(new CustomEvent("ticket-purchased"));
