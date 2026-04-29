@@ -196,7 +196,9 @@ export function MainPage() {
                  <div key={i} className="h-32 animate-pulse bg-slate-200 dark:bg-slate-800 rounded-2xl" />
                ))
             ) : (
-              upcomingMovies.map((movie) => (
+              [...upcomingMovies]
+                .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+                .map((movie) => (
                 <Card
                   key={movie.movieId}
                   className={`overflow-hidden border-none transition-all duration-300 hover:shadow-xl ${isDark ? "bg-slate-900" : "bg-white shadow-md border-slate-100 hover:border-purple-200"}`}
