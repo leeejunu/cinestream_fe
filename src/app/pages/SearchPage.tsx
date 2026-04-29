@@ -46,6 +46,7 @@ export function SearchPage() {
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
   const [searchQuery, setSearchQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const [activeCategoryIds, setActiveCategoryIds] = useState<number[]>([]); // 빈 배열 = 전체
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -125,17 +126,23 @@ export function SearchPage() {
       .finally(() => setGenreLoading(false));
   }, [activeCategoryIds]);
 
-  // 검색 결과 결정
-  const isSearchActive = searchQuery !== "" || activeCategoryIds.length > 0;
+  const handleSearch = () => {
+    const q = searchQuery.trim();
+    setSubmittedQuery(q);
+    setShowAutocomplete(false);
+  };
 
-  // 텍스트 검색 결과 (텍스트 있을 때만)
+  // 검색 결과 결정
+  const isSearchActive = submittedQuery !== "" || activeCategoryIds.length > 0;
+
+  // 텍스트 검색 결과 (엔터 후 submittedQuery 기준)
   const { movies: textResults, loading: textLoading } = useSearchMovies(
-    debouncedQuery.trim().length > 0 ? debouncedQuery.trim() : ""
+    submittedQuery.length > 0 ? submittedQuery : ""
   );
 
   // 최종 결과 계산
   let searchResults: ApiMovieCard[] = [];
-  if (debouncedQuery.trim().length > 0) {
+  if (submittedQuery.length > 0) {
     searchResults = textResults;
   } else if (activeCategoryIds.length > 0) {
     searchResults = genreResults;
@@ -160,6 +167,7 @@ export function SearchPage() {
               className={`pl-14 py-8 text-lg rounded-2xl focus:ring-4 focus:ring-purple-500/20 transition-all ${isDark ? "bg-slate-900/80 border-slate-700/50 text-white placeholder:text-slate-500" : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 shadow-sm"}`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.nativeEvent.isComposing) handleSearch(); }}
               onFocus={() => searchQuery.trim().length >= 1 && setShowAutocomplete(true)}
               onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
             />
@@ -170,7 +178,7 @@ export function SearchPage() {
                   <div
                     key={item.movieId}
                     className={`px-5 py-3 cursor-pointer flex items-center justify-between ${isDark ? "hover:bg-slate-800" : "hover:bg-purple-50"}`}
-                    onMouseDown={() => { setSearchQuery(item.title); setShowAutocomplete(false); }}
+                    onMouseDown={() => { setSearchQuery(item.title); setSubmittedQuery(item.title); setShowAutocomplete(false); }}
                   >
                     <span className={`font-medium ${isDark ? "text-white" : "text-slate-900"}`}>{item.title}</span>
                     <span className={`text-sm ${isDark ? "text-slate-500" : "text-slate-400"}`}>{item.creatorNickname}</span>
