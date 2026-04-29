@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize } from "lucide-react";
+import { Volume2, VolumeX, Maximize, Minimize } from "lucide-react";
 import { Button } from "../ui/button";
 import { Slider } from "../ui/slider";
 import { attachHls, type HlsHandle } from "../../lib/streamingHls";
@@ -8,6 +8,7 @@ export interface StreamPlayerProps {
   manifestUrl: string;
   scheduleStartTime: string;
   enabled: boolean;
+  controlsEnabled: boolean;
   onFatalError?: (kind: "AUTH" | "WINDOW_CLOSED" | "NETWORK" | "MEDIA" | "OTHER") => void;
 }
 
@@ -15,14 +16,14 @@ export function StreamPlayer({
   manifestUrl,
   scheduleStartTime,
   enabled,
+  controlsEnabled,
   onFatalError,
 }: StreamPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsHandleRef = useRef<HlsHandle | null>(null);
 
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [volume, setVolume] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -35,9 +36,9 @@ export function StreamPlayer({
       onFatalError,
     });
     hlsHandleRef.current = handle;
-    videoRef.current.play().catch(() => {
-      // autoplay 정책으로 실패 시 사용자 클릭 필요 — 그대로 둠
-    });
+    const video = videoRef.current;
+    video.muted = true;
+    video.play().catch(() => {});
     return () => {
       handle.destroy();
       hlsHandleRef.current = null;
@@ -49,17 +50,6 @@ export function StreamPlayer({
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
-
-  const handleTogglePlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (video.paused) {
-      hlsHandleRef.current?.jumpToLive();
-      video.play().catch(() => {});
-    } else {
-      video.pause();
-    }
-  };
 
   const handleToggleMute = () => {
     const video = videoRef.current;
@@ -105,8 +95,7 @@ export function StreamPlayer({
         controlsList="nodownload noplaybackrate"
         disablePictureInPicture
         playsInline
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
+        muted
         onContextMenu={(e) => e.preventDefault()}
       />
 
@@ -114,18 +103,9 @@ export function StreamPlayer({
         <Button
           variant="ghost"
           size="icon"
-          className="text-white hover:bg-white/20"
-          onClick={handleTogglePlay}
-          aria-label={isPlaying ? "일시정지" : "재생"}
-        >
-          {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:bg-white/20"
+          className="text-white hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed"
           onClick={handleToggleMute}
+          disabled={!controlsEnabled}
           aria-label={isMuted ? "음소거 해제" : "음소거"}
         >
           {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
@@ -138,6 +118,7 @@ export function StreamPlayer({
             max={1}
             step={0.05}
             onValueChange={handleVolumeChange}
+            disabled={!controlsEnabled}
           />
         </div>
 

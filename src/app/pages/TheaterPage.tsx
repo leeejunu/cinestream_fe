@@ -185,6 +185,7 @@ export function TheaterPage() {
             manifestUrl={session.manifestUrl}
             scheduleStartTime={session.schedule.startTime}
             enabled={showPlayer}
+            controlsEnabled={showPlayer}
             onFatalError={handleFatalPlayerError}
           />
         ) : (
