@@ -61,8 +61,8 @@ export function StateBanner({ state, startTime, endTime, title, imageUrl }: Stat
           Icon: CircleStop,
           tone: "text-rose-300",
           title: "방송이 종료되었습니다",
-          subtitle: "관람해 주셔서 감사합니다.",
-          desc: "잠시 후 채팅도 종료돼요.",
+          subtitle: `${formatRemaining(endMs + 3 * 60 * 1000)} 후 자동 퇴장`,
+          desc: "관람해 주셔서 감사합니다. 잠시 후 메인 화면으로 이동해요.",
         };
       case "FORCE_EXIT":
         return {

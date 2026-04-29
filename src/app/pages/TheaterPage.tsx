@@ -25,6 +25,8 @@ import {
 
 const FALLBACK_INITIAL_STATE: StreamState = "LOBBY_OPEN";
 
+const POST_GRACE_MS = 3 * 60 * 1000;
+
 const computeInitialState = (startTime: string, endTime: string): StreamState => {
   const now = Date.now();
   const start = new Date(startTime).getTime();
@@ -34,7 +36,7 @@ const computeInitialState = (startTime: string, endTime: string): StreamState =>
   if (now < start) return "STARTING_SOON";
   if (now < end - 60 * 1000) return "STARTED";
   if (now < end) return "ENDING_SOON";
-  if (now < end + 10 * 60 * 1000) return "ENDED";
+  if (now < end + POST_GRACE_MS) return "ENDED";
   return "FORCE_EXIT";
 };
 
@@ -145,10 +147,11 @@ export function TheaterPage() {
         onKick: (msg) => {
           if (msg.reason === "DUPLICATE_LOGIN") {
             toast.error("다른 곳에서 입장하여 현재 세션이 종료되었어요.");
+            navigate("/mypage");
           } else {
             toast.info("관람 시간이 종료되어 자동 퇴장됩니다.");
+            navigate("/main");
           }
-          navigate("/mypage");
         },
         onConnectFailed: (code) => {
           if (code === "NO_ENTITLEMENT") setErrorCode("NO_ENTITLEMENT");
@@ -174,6 +177,19 @@ export function TheaterPage() {
     const id = setTimeout(() => navigate("/main"), 3000);
     return () => clearTimeout(id);
   }, [state, navigate]);
+
+  // ENDED 진입 시 endTime + 3분 시점에 안전망 자동 이동 (백엔드 FORCE_EXIT/kick 메시지 누락 대비)
+  useEffect(() => {
+    if (state !== "ENDED" || !session) return;
+    const target = new Date(session.schedule.endTime).getTime() + POST_GRACE_MS;
+    const remaining = target - Date.now();
+    if (remaining <= 0) {
+      navigate("/main");
+      return;
+    }
+    const id = setTimeout(() => navigate("/main"), remaining);
+    return () => clearTimeout(id);
+  }, [state, session, navigate]);
 
   const handleExit = () => {
     if (confirm("상영관을 퇴장하시겠습니까?")) {

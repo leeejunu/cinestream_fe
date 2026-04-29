@@ -22,7 +22,7 @@ interface PhaseInfo {
 }
 
 const PHASE_INFO: Record<
-  Extract<ScheduleStatus, "CART" | "IN_PROGRESSING" | "TICKETING">,
+  Extract<ScheduleStatus, "CART" | "IN_PROGRESSING" | "TICKETING" | "LOBBY">,
   PhaseInfo
 > = {
   CART: {
@@ -39,6 +39,11 @@ const PHASE_INFO: Record<
     label: "티켓팅",
     cta: "티켓팅 입장",
     badgeClass: "bg-purple-600 text-white",
+  },
+  LOBBY: {
+    label: "곧 시작",
+    cta: "티켓팅 마감",
+    badgeClass: "bg-emerald-500 text-white",
   },
 };
 
@@ -73,11 +78,13 @@ export function TicketableScheduleCard({ schedule, onAction }: Props) {
       badgeClass: "bg-slate-500 text-white",
     };
   const isTicketing = schedule.status === "TICKETING";
+  const isLobby = schedule.status === "LOBBY";
   const soldOut = isTicketing && (schedule.availableSeats ?? 0) === 0;
   const remaining = schedule.availableSeats ?? 0;
+  const disabled = soldOut || isLobby;
 
   const handleClick = () => {
-    if (soldOut) return;
+    if (disabled) return;
     onAction(schedule);
   };
 
@@ -85,7 +92,7 @@ export function TicketableScheduleCard({ schedule, onAction }: Props) {
     <Card
       className={cn(
         "overflow-hidden transition-all p-0 gap-0",
-        soldOut
+        disabled
           ? "opacity-60 cursor-not-allowed"
           : "cursor-pointer hover:shadow-lg hover:-translate-y-0.5",
       )}
@@ -146,7 +153,7 @@ export function TicketableScheduleCard({ schedule, onAction }: Props) {
         <Button
           variant="default"
           className="w-full mt-2"
-          disabled={soldOut}
+          disabled={disabled}
           onClick={(e) => {
             e.stopPropagation();
             handleClick();

@@ -322,7 +322,9 @@ export function MovieDetailPage() {
                 <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
               </div>
             ) : (() => {
-              const visible = schedules.filter(s => s.status !== "STREAMING" || purchasedSchedules.includes(s.scheduleId));
+              const visible = schedules.filter(s =>
+                (s.status !== "STREAMING" && s.status !== "LOBBY") || purchasedSchedules.includes(s.scheduleId)
+              );
               if (visible.length === 0) {
                 return (
                   <p className={`text-center py-8 ${isDark ? "text-slate-500" : "text-slate-400"}`}>현재 예정된 상영 일정이 없습니다.</p>
@@ -354,6 +356,9 @@ export function MovieDetailPage() {
                             </span>
                             {schedule.status === "STREAMING" && (
                               <Badge className="ml-2 bg-green-600 text-white text-[10px]">상영 중</Badge>
+                            )}
+                            {schedule.status === "LOBBY" && (
+                              <Badge className="ml-2 bg-emerald-500 text-white text-[10px]">곧 시작</Badge>
                             )}
                             {soldOut && (
                               <Badge variant="destructive" className="ml-2 text-[10px]">매진</Badge>

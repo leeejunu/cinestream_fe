@@ -52,6 +52,7 @@ export type ScheduleStatus =
   | "CART"
   | "IN_PROGRESSING"
   | "TICKETING"
+  | "LOBBY"
   | "STREAMING"
   | "FINISH";
 
@@ -82,7 +83,7 @@ export interface MovieScheduleResponse {
   startTime: string;
   endTime: string;
   ticketingTime: string;
-  status: "CART" | "IN_PROGRESSING" | "TICKETING" | "STREAMING";
+  status: "CART" | "IN_PROGRESSING" | "TICKETING" | "LOBBY" | "STREAMING";
   totalSeats: number;
   /** TICKETING 단계에서만 채워짐, 그 외 null */
   availableSeats: number | null;
