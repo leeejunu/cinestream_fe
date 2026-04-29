@@ -46,6 +46,7 @@ export function CookieManagementPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [filterStatus, setFilterStatus] = useState("모두");
   const [loading, setLoading] = useState(true);
+  const [isConfirming, setIsConfirming] = useState(false);
   const [processingRefund, setProcessingRefund] = useState<string | null>(null);
   const [refundDialog, setRefundDialog] = useState<{ open: boolean; transaction: Transaction | null }>({ open: false, transaction: null });
   const [refundCookieAmount, setRefundCookieAmount] = useState(0);
@@ -103,9 +104,6 @@ export function CookieManagementPage() {
           });
         });
 
-      // userInfo.cookieBalance 대신 전역 refreshUser 호출
-      await refreshUser();
-
       // 최신순 정렬 (ISO 문자열 비교는 시간 순 정렬에 안전함)
       merged.sort((a, b) => {
         const timeA = a.rawCreatedAt ? new Date(a.rawCreatedAt).getTime() : 0;
@@ -127,17 +125,21 @@ export function CookieManagementPage() {
     const cookieAmount = params.get("cookieAmount");
 
     if (paymentKey && orderId && amount && cookieAmount) {
-      // Toss 결제 성공 → confirm 호출 (Payment 생성 + PG 승인을 한 번에)
       window.history.replaceState({}, "", "/cookies");
       window.history.pushState({}, "", "/cookies");
+      setIsConfirming(true);
       confirmPayment(paymentKey, orderId, parseInt(amount), parseInt(cookieAmount)).then(async () => {
-        // 즉시 화면에 반영 (낙관적 업데이트) - 헤더와 동기화
-        updateCookies((user?.cookieBalance ?? 0) + parseInt(cookieAmount));
+        // Kafka 처리 완료까지 폴링 (최대 10초, 1초 간격)
+        const prevBalance = user?.cookieBalance ?? 0;
+        for (let i = 0; i < 10; i++) {
+          await new Promise((r) => setTimeout(r, 1000));
+          const latest = await userService.getMe().catch(() => null);
+          if (latest && latest.cookieBalance !== prevBalance) break;
+        }
+        await refreshUser();
         toast.success(`쿠키 ${cookieAmount}개 충전 완료!`);
-        fetchTransactions().finally(() => setLoading(false));
-        // 백그라운드에서 Kafka 처리 완료 후 실제 잔액으로 동기화
-        setTimeout(() => refreshUser(), 5000);
-      });
+        fetchTransactions().finally(() => { setLoading(false); setIsConfirming(false); });
+      }).catch(() => setIsConfirming(false));
       return;
     }
 
@@ -263,10 +265,11 @@ export function CookieManagementPage() {
     return true;
   });
 
-  if (loading) {
+  if (loading || isConfirming) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDark ? "bg-slate-950" : "bg-slate-50"}`}>
+      <div className={`min-h-screen flex flex-col items-center justify-center gap-4 ${isDark ? "bg-slate-950" : "bg-slate-50"}`}>
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+        {isConfirming && <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-500"}`}>결제 처리 중...</p>}
       </div>
     );
   }
