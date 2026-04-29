@@ -12,6 +12,7 @@ const RATE_LIMIT_MAX = 3;
 
 export interface ChatPanelProps {
   messages: ChatMessage[];
+  ownMessageIds: Set<string>;
   viewerCount: number;
   wsState: WsConnectionState;
   onSend: (content: string) => void;
@@ -20,6 +21,7 @@ export interface ChatPanelProps {
 
 export function ChatPanel({
   messages,
+  ownMessageIds,
   viewerCount,
   wsState,
   onSend,
@@ -28,28 +30,11 @@ export function ChatPanel({
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const sendTimestampsRef = useRef<number[]>([]);
-  const recentSentRef = useRef<{ content: string; at: number }[]>([]);
-  const ownMessageIdsRef = useRef<Set<string>>(new Set());
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages.length]);
-
-  // 내가 보낸 메시지 추적: 서버에서 돌아온 메시지 중 최근 보낸 내용과 일치하면 내 것으로 확정
-  useEffect(() => {
-    const now = Date.now();
-    for (const msg of messages) {
-      if (ownMessageIdsRef.current.has(msg.messageId)) continue;
-      const idx = recentSentRef.current.findIndex(
-        (s) => s.content === msg.content && now - s.at < 5000,
-      );
-      if (idx !== -1) {
-        ownMessageIdsRef.current.add(msg.messageId);
-        recentSentRef.current.splice(idx, 1);
-      }
-    }
-  }, [messages]);
 
   const handleSend = () => {
     const content = draft.trim();
@@ -69,8 +54,6 @@ export function ChatPanel({
     }
     recent.push(now);
     sendTimestampsRef.current = recent;
-
-    recentSentRef.current.push({ content, at: now });
 
     onSend(content);
     setDraft("");
@@ -105,7 +88,7 @@ export function ChatPanel({
           </div>
         ) : (
           messages.map((msg) => {
-            const isMe = ownMessageIdsRef.current.has(msg.messageId);
+            const isMe = ownMessageIds.has(msg.messageId);
             return (
               <ChatRow
                 key={msg.messageId}

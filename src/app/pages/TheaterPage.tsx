@@ -48,11 +48,35 @@ export function TheaterPage() {
   const [errorCode, setErrorCode] = useState<StreamingSessionErrorCode | null>(null);
   const [state, setState] = useState<StreamState>(FALLBACK_INITIAL_STATE);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [ownMessageIds, setOwnMessageIds] = useState<Set<string>>(new Set());
   const [viewerCount, setViewerCount] = useState(0);
   const [wsState, setWsState] = useState<WsConnectionState>("connecting");
   const [retryNonce, setRetryNonce] = useState(0);
+  const [chatWidth, setChatWidth] = useState(384); // 기본 w-96 = 384px
 
   const stompRef = useRef<StreamStomp | null>(null);
+  const recentSentRef = useRef<{ content: string; at: number }[]>([]);
+  const isDraggingRef = useRef(false);
+
+  const handleDragStart = (e: React.MouseEvent) => {
+    isDraggingRef.current = true;
+    e.preventDefault();
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+      const newWidth = window.innerWidth - ev.clientX;
+      setChatWidth(Math.min(Math.max(newWidth, 280), 640));
+    };
+
+    const onMouseUp = () => {
+      isDraggingRef.current = false;
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
 
   const handleFatalPlayerError = useCallback(
     (kind: "AUTH" | "WINDOW_CLOSED" | "NETWORK" | "MEDIA" | "OTHER") => {
@@ -102,8 +126,17 @@ export function TheaterPage() {
       handlers: {
         onConnectionStateChange: setWsState,
         onState: (msg: StateMessage) => setState(msg.state),
-        onChat: (msg) =>
-          setMessages((prev) => (prev.length > 200 ? [...prev.slice(-150), msg] : [...prev, msg])),
+        onChat: (msg) => {
+          const now = Date.now();
+          const idx = recentSentRef.current.findIndex(
+            (s) => s.content === msg.content && now - s.at < 5000,
+          );
+          if (idx !== -1) {
+            recentSentRef.current.splice(idx, 1);
+            setOwnMessageIds((prev) => new Set([...prev, msg.messageId]));
+          }
+          setMessages((prev) => (prev.length > 200 ? [...prev.slice(-150), msg] : [...prev, msg]));
+        },
         onViewers: (msg) => setViewerCount(msg.count),
         onWsError: (msg) => {
           if (msg.code === "CHAT_RATE_LIMITED") toast.warning("너무 자주 보내고 있어요.");
@@ -153,6 +186,7 @@ export function TheaterPage() {
   };
 
   const handleSend = useCallback((content: string) => {
+    recentSentRef.current.push({ content, at: Date.now() });
     stompRef.current?.sendChat(content);
   }, []);
 
@@ -199,9 +233,17 @@ export function TheaterPage() {
         )}
       </div>
 
-      <aside className="w-full lg:w-96 h-[60vh] lg:h-screen shrink-0">
+      <div
+        className="hidden lg:flex items-center justify-center w-1 bg-white/10 hover:bg-white/30 cursor-col-resize shrink-0 transition-colors"
+        onMouseDown={handleDragStart}
+      >
+        <div className="w-0.5 h-8 bg-white/40 rounded-full" />
+      </div>
+
+      <aside className="w-full h-[60vh] lg:h-screen shrink-0" style={{ width: chatWidth }}>
         <ChatPanel
           messages={messages}
+          ownMessageIds={ownMessageIds}
           viewerCount={viewerCount}
           wsState={wsState}
           onSend={handleSend}
