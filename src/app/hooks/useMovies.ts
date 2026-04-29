@@ -235,54 +235,6 @@ export function useCreatorSchedules(date: string | undefined) {
   return { schedules, setSchedules, loading, refetch: () => setRefreshKey(prev => prev + 1) };
 }
 
-/** 크리에이터 - 날짜별 임시+확정 스케줄 목록 */
-export function useDraftSchedules(date: string | undefined) {
-  const [schedules, setSchedules] = useState<ApiDraftSchedule[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const fetchSchedules = () => {
-    if (!date) {
-      setSchedules([]);
-      return;
-    }
-    setLoading(true);
-    movieService.getDraftSchedules(date)
-      .then(setSchedules)
-      .catch(() => setSchedules([]))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    fetchSchedules();
-  }, [date, refreshKey]);
-
-  return { schedules, setSchedules, loading, refetch: () => setRefreshKey(prev => prev + 1) };
-}
-
-/** 크리에이터 - 날짜별 확정 스케줄 목록 */
-export function useConfirmedSchedules(date: string | undefined, asCreator = false) {
-  const [schedules, setSchedules] = useState<ApiScheduleForCreator[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!date) {
-      setSchedules([]);
-      return;
-    }
-    setLoading(true);
-    const fetch = asCreator
-      ? movieService.getMyConfirmedSchedules(date)
-      : movieService.getConfirmedSchedules(date);
-    fetch
-      .then(setSchedules)
-      .catch(() => setSchedules([]))
-      .finally(() => setLoading(false));
-  }, [date, asCreator]);
-
-  return { schedules, loading };
-}
-
 // ─── Mock 훅 (백엔드 미구현) ─────────────────────────────────────────────────
 
 import { ticketService } from "../services/ticketService";

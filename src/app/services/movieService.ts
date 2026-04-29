@@ -341,13 +341,7 @@ export const movieService = {
     await creatorApiClient.post("/api/creators/schedules", data);
   },
 
-  /** 날짜별 임시+확정 스케줄 목록 */
-  async getDraftSchedules(date: string): Promise<ApiDraftSchedule[]> {
-    const res = await creatorApiClient.get<ApiDraftSchedule[]>(`/api/creators/schedules/draft?date=${date}`);
-    return res.data;
-  },
-
-  /** 날짜별 확정 스케줄 목록 (크리에이터용) */
+  /** 날짜별 일정 목록 (미확정+확정, isConfirmed 필드로 구분) */
   async getCreatorSchedules(date: string): Promise<ApiDraftSchedule[]> {
     const res = await creatorApiClient.get<ApiDraftSchedule[]>(`/api/creators/schedules?date=${date}`);
     return res.data;
@@ -361,19 +355,6 @@ export const movieService = {
   /** 미확정 스케줄 삭제 */
   async deleteSchedule(scheduleId: number): Promise<void> {
     await creatorApiClient.delete(`/api/creators/schedules/${scheduleId}`);
-  },
-
-  /** 날짜별 확정 일정 조회 (내 스케줄/프로필 공용) */
-  async getConfirmedSchedules(date: string, creatorId?: string): Promise<ApiScheduleForCreator[]> {
-    const id = creatorId || "me";
-    const res = await apiClient.get<ApiScheduleForCreator[]>(`/api/movies/schedules/search?creatorId=${id}&date=${date}`);
-    return res.data;
-  },
-
-  /** 크리에이터 대시보드용 확정 일정 조회 (creatorApiClient 사용) */
-  async getMyConfirmedSchedules(date: string): Promise<ApiScheduleForCreator[]> {
-    const res = await creatorApiClient.get<ApiScheduleForCreator[]>(`/api/movies/schedules/search?creatorId=me&date=${date}`);
-    return res.data;
   },
 
   /** 특정 크리에이터의 날짜별 확정 일정 조회 (프로필용) */
