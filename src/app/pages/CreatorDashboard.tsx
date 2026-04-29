@@ -342,7 +342,7 @@ export function CreatorDashboard() {
                   <div className="space-y-2">
                     <Label className={`font-semibold ${isDark ? "text-white" : "text-slate-700"}`}>상영할 영화 선택</Label>
                     <Select value={selectedMovieId} onValueChange={setSelectedMovieId}>
-                      <SelectTrigger className={`h-12 transition-colors ${isDark ? "bg-slate-800 border-slate-700 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}>
+                      <SelectTrigger className={`h-12 w-full transition-colors ${isDark ? "bg-slate-800 border-slate-700 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}>
                         <SelectValue placeholder="영화를 선택하세요" />
                       </SelectTrigger>
                       <SelectContent className={isDark ? "bg-slate-800 border-slate-700 text-white" : "bg-white"}>
