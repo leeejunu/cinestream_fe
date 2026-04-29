@@ -89,7 +89,7 @@ export const router = createBrowserRouter([
         Component: SearchPage,
       },
       {
-        path: "/creator/:creatorId",
+        path: "/profile/:creatorId",
         Component: CreatorProfilePage,
       },
       {

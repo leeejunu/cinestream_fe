@@ -236,7 +236,7 @@ export function MovieDetailPage() {
               <div className={`flex items-center gap-4 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                 <div 
                   className={`flex items-center gap-1 font-medium cursor-pointer transition-colors hover:text-purple-500`}
-                  onClick={() => navigate(`/creator/${movie.creatorId}`)}
+                  onClick={() => navigate(`/profile/${movie.creatorId}`)}
                 >
                   <User className="w-4 h-4" />
                   <span>{movie.nickname}</span>
