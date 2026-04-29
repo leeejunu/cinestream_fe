@@ -1,5 +1,6 @@
 import apiClient from "./apiClient";
 import creatorApiClient from "./creatorApiClient";
+import publicApiClient from "./publicApiClient";
 
 interface SignupRequest {
   email: string;
@@ -63,13 +64,13 @@ export const authService = {
   },
 
   async googleLogin(code: string): Promise<void> {
-    const res = await apiClient.post("/api/users/oauth2/google", { code });
+    const res = await publicApiClient.post("/api/users/oauth2/google", { code });
     tokenStorage.setTokens(res.data);
   },
 
   async signup(data: SignupRequest): Promise<string> {
     try {
-      const res = await apiClient.post("/api/users/join", data);
+      const res = await publicApiClient.post("/api/users/join", data);
       return res.data;
     } catch (error: any) {
       throw new Error(error.response?.data || "회원가입에 실패했습니다.");
@@ -77,7 +78,7 @@ export const authService = {
   },
 
   async login(email: string, password: string): Promise<void> {
-    const res = await apiClient.post("/api/users/login", { email, password });
+    const res = await publicApiClient.post("/api/users/login", { email, password });
     tokenStorage.setTokens(res.data);
   },
 
@@ -105,7 +106,7 @@ export const authService = {
 
   async sendVerificationCode(email: string): Promise<void> {
     try {
-      await apiClient.post("/api/users/email/verification/send", { email });
+      await publicApiClient.post("/api/users/email/verification/send", { email });
     } catch (error: any) {
       throw new Error(error.response?.data?.message || "인증 코드 발송에 실패했습니다.");
     }
@@ -113,14 +114,14 @@ export const authService = {
 
   async verifyEmailCode(email: string, code: string): Promise<void> {
     try {
-      await apiClient.post("/api/users/email/verification/verify", { email, code });
+      await publicApiClient.post("/api/users/email/verification/verify", { email, code });
     } catch (error: any) {
       throw new Error(error.response?.data?.message || "인증 코드가 올바르지 않습니다.");
     }
   },
 
   async checkEmailDuplicate(email: string): Promise<boolean> {
-    const res = await apiClient.get(`/api/users/email/check?email=${encodeURIComponent(email)}`, {
+    const res = await publicApiClient.get(`/api/users/email/check?email=${encodeURIComponent(email)}`, {
       validateStatus: (s) => s === 200 || s === 409,
     });
     if (res.status === 200) return true;
@@ -129,7 +130,7 @@ export const authService = {
   },
 
   async checkNicknameDuplicate(nickname: string): Promise<boolean> {
-    const res = await apiClient.get(`/api/users/nickname/check?nickname=${encodeURIComponent(nickname)}`, {
+    const res = await publicApiClient.get(`/api/users/nickname/check?nickname=${encodeURIComponent(nickname)}`, {
       validateStatus: (s) => s === 200 || s === 409,
     });
     if (res.status === 200) return true;
@@ -138,7 +139,7 @@ export const authService = {
   },
 
   async creatorLogin(email: string, password: string): Promise<void> {
-    const res = await apiClient.post("/api/creators/login", { email, password });
+    const res = await publicApiClient.post("/api/creators/login", { email, password });
     creatorTokenStorage.setTokens(res.data);
   },
 
@@ -152,14 +153,14 @@ export const authService = {
     accountHolder: string;
   }): Promise<void> {
     try {
-      await apiClient.post("/api/creators/join", data);
+      await publicApiClient.post("/api/creators/join", data);
     } catch (error: any) {
       throw new Error(error.response?.data || "가입에 실패했습니다.");
     }
   },
 
   async checkCreatorEmailDuplicate(email: string): Promise<boolean> {
-    const res = await apiClient.get(`/api/creators/email/check?email=${encodeURIComponent(email)}`, {
+    const res = await publicApiClient.get(`/api/creators/email/check?email=${encodeURIComponent(email)}`, {
       validateStatus: (s) => s === 200 || s === 409,
     });
     if (res.status === 200) return true;
@@ -168,7 +169,7 @@ export const authService = {
   },
 
   async checkCreatorNicknameDuplicate(nickname: string): Promise<boolean> {
-    const res = await apiClient.get(`/api/creators/nickname/check?nickname=${encodeURIComponent(nickname)}`, {
+    const res = await publicApiClient.get(`/api/creators/nickname/check?nickname=${encodeURIComponent(nickname)}`, {
       validateStatus: (s) => s === 200 || s === 409,
     });
     if (res.status === 200) return true;
