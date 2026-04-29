@@ -205,7 +205,7 @@ export function TheaterPage() {
   const showPlayer = state === "STARTED" || state === "ENDING_SOON";
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col lg:flex-row">
+    <div className="h-screen overflow-hidden bg-black text-white flex flex-col lg:flex-row">
       <div className="absolute top-4 left-4 z-50">
         <Button variant="ghost" className="text-white hover:bg-white/20" onClick={handleExit}>
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -213,7 +213,7 @@ export function TheaterPage() {
         </Button>
       </div>
 
-      <div className="relative flex-1 min-h-[40vh] lg:min-h-screen bg-black">
+      <div className="relative flex-1 min-h-[40vh] lg:h-full bg-black">
         {showPlayer ? (
           <StreamPlayer
             manifestUrl={session.manifestUrl}
@@ -240,7 +240,7 @@ export function TheaterPage() {
         <div className="w-0.5 h-8 bg-white/40 rounded-full" />
       </div>
 
-      <aside className="w-full h-[60vh] lg:h-screen shrink-0" style={{ width: chatWidth }}>
+      <aside className="w-full h-[60vh] lg:h-full shrink-0" style={{ width: chatWidth }}>
         <ChatPanel
           messages={messages}
           ownMessageIds={ownMessageIds}
