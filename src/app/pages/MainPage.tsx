@@ -24,6 +24,7 @@ export function MainPage() {
   const isDark = theme === "dark";
 
   const [topMovieDetail, setTopMovieDetail] = useState<ApiMovieDetail | null>(null);
+  const [isPortrait, setIsPortrait] = useState(false);
 
   useEffect(() => {
     if (allMovies.length === 0) return;
@@ -85,18 +86,34 @@ export function MainPage() {
       <main className="container mx-auto px-6 py-8">
         {/* Hero Section */}
         {topMovieDetail && (
-          <section className="mb-12 relative rounded-3xl overflow-hidden aspect-[21/9] flex items-center shadow-2xl group">
+          <section className="mb-12 relative rounded-3xl overflow-hidden aspect-[21/9] flex items-center shadow-2xl group bg-slate-950">
             <img
               src={getImageUrl(topMovieDetail.imageUrl) || getPlaceholderPoster(topMovieDetail.movieId)}
               alt={topMovieDetail.title}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              onLoad={(e) => {
+                const img = e.currentTarget;
+                setIsPortrait(img.naturalHeight > img.naturalWidth);
+              }}
+              className={`absolute transition-all duration-1000 group-hover:scale-105 ${
+                isPortrait 
+                  ? "right-0 h-full w-auto object-contain object-right" 
+                  : "inset-0 w-full h-full object-cover"
+              }`}
+              style={isPortrait ? { 
+                maskImage: 'linear-gradient(to left, black 75%, transparent)',
+                WebkitMaskImage: 'linear-gradient(to left, black 75%, transparent)'
+              } : {}}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/40 to-transparent" />
+            <div className={`absolute inset-0 transition-all duration-500 ${
+              isPortrait 
+                ? "bg-gradient-to-r from-slate-950 via-slate-950/50 to-transparent" 
+                : "bg-gradient-to-r from-slate-950 via-slate-950/40 to-transparent"
+            }`} />
             <div className="relative z-10 px-12 max-w-2xl">
               <Badge className="mb-4 bg-purple-600 text-white border-none px-3 py-1">지금 가장 핫한 영화</Badge>
-              <h2 className="text-6xl font-black text-white mb-4 tracking-tighter">{topMovieDetail.title}</h2>
+              <h2 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tighter drop-shadow-md">{topMovieDetail.title}</h2>
               {topMovieDetail.description && (
-                <p className="text-slate-200 text-lg mb-8 leading-relaxed line-clamp-2">
+                <p className="text-slate-200 text-lg mb-8 leading-relaxed line-clamp-2 max-w-xl">
                   {topMovieDetail.description}
                 </p>
               )}
