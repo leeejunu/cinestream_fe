@@ -172,9 +172,6 @@ export function MainPage() {
               <Video className="w-6 h-6 text-purple-500" />
               <h3 className={`text-2xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>상영 예정작</h3>
             </div>
-            <Button variant="ghost" className="font-bold text-slate-500 hover:text-slate-400">
-              달력 보기
-            </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {upcomingLoading ? (
