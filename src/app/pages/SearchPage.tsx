@@ -5,7 +5,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
-import { ArrowLeft, Search, Compass, Flame, Star, Sparkles, PlayCircle, Sun, Moon, ChevronLeft, ChevronRight, Plus, TrendingUp } from "lucide-react";
+import { ArrowLeft, Search, Compass, Flame, Star, Sparkles, PlayCircle, Sun, Moon, ChevronLeft, ChevronRight, Plus, TrendingUp, Heart, MessageSquare } from "lucide-react";
 import { Header } from "../components/ui/header";
 
 import { useSearchMovies, useCategories, useAllPublicMovies } from "../hooks/useMovies";
@@ -320,9 +320,17 @@ export function SearchPage() {
                       <h3 className={`font-bold text-base mb-1 truncate group-hover:text-purple-500 ${isDark ? "text-white" : "text-slate-900"}`}>
                         {renderHighlighted(movie.highlightedTitle, movie.title)}
                       </h3>
-                      <p className={`text-xs mb-3 truncate ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+                      <p className={`text-xs mb-2 truncate ${isDark ? "text-slate-500" : "text-slate-400"}`}>
                         {renderHighlighted(movie.highlightedNickname, movie.nickname)}
                       </p>
+                      <div className={`flex items-center gap-3 text-xs ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+                        <span className="flex items-center gap-1">
+                          <Heart className="w-3 h-3" /> {movie.likeCount ?? 0}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="w-3 h-3" /> {movie.reviewCount ?? 0}
+                        </span>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

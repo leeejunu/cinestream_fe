@@ -12,6 +12,8 @@ export interface ApiMovieCard {
   averageRating: number | null;
   categoryIds: number[];
   imageUrl?: string;
+  likeCount?: number | null;
+  reviewCount?: number | null;
   highlightedTitle?: string | null;
   highlightedNickname?: string | null;
 }
