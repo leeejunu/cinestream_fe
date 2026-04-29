@@ -207,39 +207,10 @@ export function SearchPage() {
             </div>
           )}
 
-          {/* 필터 카운트 (카테고리별 영화 수) — 클릭 시 해당 카테고리로 필터링 */}
-          {filterCounts && !searchQuery && filterCounts.categories.length > 0 && (
-            <div className="max-w-3xl mx-auto mt-3 flex flex-wrap items-center gap-2">
-              <span className={`text-sm font-semibold mr-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>장르별</span>
-              {filterCounts.categories.map((cat, i) => {
-                // categoryName 으로 useCategories 데이터에서 categoryId 찾기
-                const matched = categories.find(c => c.name === cat.categoryName);
-                const categoryId = matched?.categoryId;
-                const isSelected = categoryId != null && activeCategoryIds.includes(categoryId);
-                return (
-                  <button
-                    key={i}
-                    onClick={() => { if (categoryId != null) toggleCategory(categoryId); }}
-                    disabled={categoryId == null}
-                    className={`text-xs px-2 py-1 rounded-full transition-colors ${
-                      isSelected
-                        ? "bg-purple-500/20 text-purple-500 border border-purple-500/30"
-                        : isDark
-                          ? "bg-slate-800 text-slate-400 hover:bg-purple-900/40 hover:text-purple-300"
-                          : "bg-slate-100 text-slate-500 hover:bg-purple-100 hover:text-purple-600"
-                    } ${categoryId == null ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-                  >
-                    {cat.categoryName}({cat.count})
-                  </button>
-                );
-              })}
-            </div>
-          )}
         </div>
 
         {/* Categories */}
-        {/* z-0: 자동완성 dropdown (Search Hero z-30) 보다 아래로. sticky 동작은 유지 */}
-        <section className="mb-14 sticky top-20 z-0 -mx-6 px-6 py-2 bg-inherit backdrop-blur-md">
+        <section className="mb-14 -mx-6 px-6 py-2">
           <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x">
             <Button
               variant={activeCategoryIds.length === 0 ? "default" : "outline"}
@@ -250,10 +221,11 @@ export function SearchPage() {
                   : (isDark ? "bg-slate-900 border-slate-700 text-slate-300 hover:text-white hover:border-purple-400" : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-purple-300 shadow-sm")
               }`}
             >
-              전체
+              전체{allMovies.length > 0 && `(${allMovies.length})`}
             </Button>
             {categories.map((cat) => {
               const isSelected = activeCategoryIds.includes(cat.categoryId);
+              const countInfo = filterCounts?.categories.find(fc => fc.categoryName === cat.name);
               return (
                 <Button
                   key={cat.categoryId}
@@ -265,7 +237,7 @@ export function SearchPage() {
                       : (isDark ? "bg-slate-900 border-slate-700 text-slate-300 hover:text-white hover:border-purple-400" : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-purple-300 shadow-sm")
                   }`}
                 >
-                  {cat.name}
+                  {cat.name}{countInfo ? `(${countInfo.count})` : ""}
                 </Button>
               );
             })}

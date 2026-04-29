@@ -11,7 +11,7 @@ export default function App() {
       <UserProvider>
         <RouterProvider router={router} />
         <Toaster />
-        {/* <Agentation /> */}
+        <Agentation />
       </UserProvider>
     </ThemeProvider>
   );
