@@ -93,7 +93,7 @@ export const router = createBrowserRouter([
         Component: CreatorProfilePage,
       },
       {
-        path: "/all-movies",
+        path: "/search",
         Component: AllMoviesPage,
       },
       {

@@ -75,7 +75,7 @@ export function MainPage() {
           <Button
             variant="ghost"
             className={`hover:text-purple-400 transition-colors ${isDark ? "text-white" : "text-slate-700"}`}
-            onClick={() => navigate("/all-movies")}
+            onClick={() => navigate("/search")}
           >
             모든 영화
           </Button>
