@@ -186,9 +186,9 @@ export function CreatorProfilePage() {
                                   <Badge className="mb-2 bg-purple-500/10 text-purple-500 border-none font-bold">
                                     {format(start, "HH:mm")} - {format(end, "HH:mm")}
                                   </Badge>
-                                  <h3 className={`font-bold text-lg mb-1 ${isDark ? "text-white" : "text-slate-900"}`}>{schedule.title}</h3>
+                                  <h3 className={`font-bold text-lg mb-1 ${isDark ? "text-white" : "text-slate-900"}`}>{(schedule as any).movieTitle || schedule.title}</h3>
                                   <div className={`text-sm flex items-center gap-2 font-medium ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                                    <span>좌석 현황: <b className="text-purple-500">{(schedule as any).remainingSeats || 0}</b> / {(schedule as any).totalSeats || 50}</span>
+                                    <span>남은 좌석 수: <b className="text-purple-500">{(schedule as any).remainingSeats || 0}</b></span>
                                     {schedule.status === "COMPLETED" && (
                                       <Badge variant="outline" className="ml-2 text-slate-500 border-slate-300">상영 종료</Badge>
                                     )}
