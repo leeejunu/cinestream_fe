@@ -354,7 +354,7 @@ export function CreatorDashboard() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className={`font-semibold ${isDark ? "text-white" : "text-slate-700"}`}>티켓팅 시작 시간 (상영 2일 이상 전)</Label>
+                    <Label className={`font-semibold ${isDark ? "text-white" : "text-slate-700"}`}>티켓팅 시작 시간</Label>
                     <Input
                       type="datetime-local"
                       value={selectedTicketingDatetime}
