@@ -401,7 +401,7 @@ export function MovieDetailPage() {
                               className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-6 rounded-xl shadow-lg shadow-purple-500/20"
                               onClick={() => setModalScheduleId(schedule.scheduleId)}
                             >
-                              {soldOut ? "매진" : "티켓팅 입장"}
+                              {soldOut ? "매진" : "티켓 구매"}
                             </Button>
                           ) : null}
                         </div>
