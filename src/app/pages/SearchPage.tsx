@@ -156,7 +156,8 @@ export function SearchPage() {
 
       <main className="container mx-auto px-6 py-8">
         {/* Search Hero */}
-        <div className="relative z-20 max-w-3xl mx-auto mb-12 text-center scale-95 md:scale-100 transition-transform">
+        {/* z-30: 자동완성 dropdown 이 카테고리 sticky (z-10) 보다 위로 떠야 함 */}
+        <div className="relative z-30 max-w-3xl mx-auto mb-12 text-center scale-95 md:scale-100 transition-transform">
           <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 mb-6 drop-shadow-sm leading-tight">
             어떤 이야기를 찾고 계신가요?
           </h1>
@@ -219,7 +220,8 @@ export function SearchPage() {
         </div>
 
         {/* Categories */}
-        <section className="mb-14 sticky top-20 z-10 -mx-6 px-6 py-2 bg-inherit backdrop-blur-md">
+        {/* z-0: 자동완성 dropdown (Search Hero z-30) 보다 아래로. sticky 동작은 유지 */}
+        <section className="mb-14 sticky top-20 z-0 -mx-6 px-6 py-2 bg-inherit backdrop-blur-md">
           <div className="flex items-center gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x">
             <Button
               variant={activeCategoryIds.length === 0 ? "default" : "outline"}
