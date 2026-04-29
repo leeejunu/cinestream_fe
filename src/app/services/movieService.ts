@@ -359,7 +359,7 @@ export const movieService = {
 
   /** 특정 크리에이터의 날짜별 확정 일정 조회 (프로필용) */
   async getConfirmedSchedulesByCreator(creatorId: string, date: string): Promise<ApiScheduleForCreator[]> {
-    const res = await apiClient.get<ApiScheduleForCreator[]>(`/api/movies/schedules/search?creatorId=${creatorId}&date=${date}`);
+    const res = await apiClient.get<ApiScheduleForCreator[]>(`/api/movies/schedules/by-date?date=${date}&creatorId=${creatorId}`);
     return res.data;
   },
 
