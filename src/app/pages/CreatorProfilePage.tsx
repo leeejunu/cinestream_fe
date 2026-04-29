@@ -175,10 +175,18 @@ export function CreatorProfilePage() {
                         }
 
                         return (
-                          <Card 
+                          <Card
                             key={schedule.scheduleId}
-                            className={`overflow-hidden border shadow-sm transition-all hover:shadow-md cursor-pointer hover:border-purple-500/50 ${isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"}`}
-                            onClick={() => navigate(`/theater/${schedule.scheduleId}`)}
+                            className={`overflow-hidden border shadow-sm transition-all ${
+                              schedule.status === "COMPLETED" || ((schedule.status === "ON_AIR" || schedule.status === "WAITING") && !hasTicket)
+                                ? "opacity-50 cursor-not-allowed"
+                                : "hover:shadow-md cursor-pointer hover:border-purple-500/50"
+                            } ${isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"}`}
+                            onClick={() => {
+                              if (schedule.status === "COMPLETED") return;
+                              if (schedule.status === "SCHEDULED") { navigate(`/movie/${(schedule as any).movieId}`); return; }
+                              if ((schedule.status === "ON_AIR" || schedule.status === "WAITING") && hasTicket) { navigate(`/theater/${schedule.scheduleId}`); }
+                            }}
                           >
                             <div className="flex flex-col sm:flex-row items-center">
                               <CardContent className="p-5 flex-1 w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
