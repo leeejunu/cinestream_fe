@@ -240,7 +240,7 @@ export function useDraftSchedules(date: string | undefined) {
 }
 
 /** 크리에이터 - 날짜별 확정 스케줄 목록 */
-export function useConfirmedSchedules(date: string | undefined) {
+export function useConfirmedSchedules(date: string | undefined, asCreator = false) {
   const [schedules, setSchedules] = useState<ApiScheduleForCreator[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -250,11 +250,14 @@ export function useConfirmedSchedules(date: string | undefined) {
       return;
     }
     setLoading(true);
-    movieService.getConfirmedSchedules(date)
+    const fetch = asCreator
+      ? movieService.getMyConfirmedSchedules(date)
+      : movieService.getConfirmedSchedules(date);
+    fetch
       .then(setSchedules)
       .catch(() => setSchedules([]))
       .finally(() => setLoading(false));
-  }, [date]);
+  }, [date, asCreator]);
 
   return { schedules, loading };
 }

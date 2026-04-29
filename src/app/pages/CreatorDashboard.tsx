@@ -40,7 +40,7 @@ export function CreatorDashboard() {
     : undefined;
 
   const { schedules, setSchedules, refetch: refetchDraftSchedules } = useDraftSchedules(dateString);
-  const { schedules: confirmedSchedules } = useConfirmedSchedules(dateString);
+  const { schedules: confirmedSchedules } = useConfirmedSchedules(dateString, true);
   const { movies: schedulableMovies, refetch: refetchSchedulableMovies } = useSchedulableMovies();
 
   useEffect(() => {
