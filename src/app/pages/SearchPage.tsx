@@ -59,11 +59,12 @@ export function SearchPage() {
   const [filterCounts, setFilterCounts] = useState<{ categories: Array<{ categoryName: string; count: number }> } | null>(null);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
 
-  // 페이지 열릴 때: 인기검색어 + 필터카운트 로딩
+  // 페이지 열릴 때 + 검색 끝날 때마다: 인기검색어 + 필터카운트 갱신
+  // submittedQuery 의존성 → 사용자가 검색하면 popular 즉시 다시 받아옴 (새 검색어가 Top 진입 시 바로 반영)
   useEffect(() => {
     movieService.getPopularKeywords(10).then(data => setPopularKeywords(data.keywords)).catch(() => {});
     movieService.getFilterCounts().then(data => setFilterCounts(data)).catch(() => {});
-  }, []);
+  }, [submittedQuery]);
 
   // 검색어 디바운스 (300ms) — 자동완성/검색 둘 다 참조
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -206,15 +207,32 @@ export function SearchPage() {
             </div>
           )}
 
-          {/* 필터 카운트 (카테고리별 영화 수) */}
+          {/* 필터 카운트 (카테고리별 영화 수) — 클릭 시 해당 카테고리로 필터링 */}
           {filterCounts && !searchQuery && filterCounts.categories.length > 0 && (
             <div className="max-w-3xl mx-auto mt-3 flex flex-wrap items-center gap-2">
               <span className={`text-sm font-semibold mr-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>장르별</span>
-              {filterCounts.categories.map((cat, i) => (
-                <span key={i} className={`text-xs px-2 py-1 rounded-full ${isDark ? "bg-slate-800 text-slate-400" : "bg-slate-100 text-slate-500"}`}>
-                  {cat.categoryName}({cat.count})
-                </span>
-              ))}
+              {filterCounts.categories.map((cat, i) => {
+                // categoryName 으로 useCategories 데이터에서 categoryId 찾기
+                const matched = categories.find(c => c.name === cat.categoryName);
+                const categoryId = matched?.categoryId;
+                const isSelected = categoryId != null && activeCategoryIds.includes(categoryId);
+                return (
+                  <button
+                    key={i}
+                    onClick={() => { if (categoryId != null) toggleCategory(categoryId); }}
+                    disabled={categoryId == null}
+                    className={`text-xs px-2 py-1 rounded-full transition-colors ${
+                      isSelected
+                        ? "bg-purple-500/20 text-purple-500 border border-purple-500/30"
+                        : isDark
+                          ? "bg-slate-800 text-slate-400 hover:bg-purple-900/40 hover:text-purple-300"
+                          : "bg-slate-100 text-slate-500 hover:bg-purple-100 hover:text-purple-600"
+                    } ${categoryId == null ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                  >
+                    {cat.categoryName}({cat.count})
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
