@@ -214,6 +214,27 @@ export function useSchedulableMovies() {
   return { movies, loading, refetch: () => setRefreshKey(prev => prev + 1) };
 }
 
+/** 크리에이터 - 날짜별 확정 스케줄 목록 (/api/creators/schedules) */
+export function useCreatorSchedules(date: string | undefined) {
+  const [schedules, setSchedules] = useState<ApiDraftSchedule[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (!date) {
+      setSchedules([]);
+      return;
+    }
+    setLoading(true);
+    movieService.getCreatorSchedules(date)
+      .then(setSchedules)
+      .catch(() => setSchedules([]))
+      .finally(() => setLoading(false));
+  }, [date, refreshKey]);
+
+  return { schedules, setSchedules, loading, refetch: () => setRefreshKey(prev => prev + 1) };
+}
+
 /** 크리에이터 - 날짜별 임시+확정 스케줄 목록 */
 export function useDraftSchedules(date: string | undefined) {
   const [schedules, setSchedules] = useState<ApiDraftSchedule[]>([]);

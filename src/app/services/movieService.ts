@@ -347,6 +347,12 @@ export const movieService = {
     return res.data;
   },
 
+  /** 날짜별 확정 스케줄 목록 (크리에이터용) */
+  async getCreatorSchedules(date: string): Promise<ApiDraftSchedule[]> {
+    const res = await creatorApiClient.get<ApiDraftSchedule[]>(`/api/creators/schedules?date=${date}`);
+    return res.data;
+  },
+
   /** 스케줄 확정 */
   async confirmSchedules(scheduleIds: number[]): Promise<void> {
     await creatorApiClient.patch("/api/creators/schedules/confirm", { scheduleIds });

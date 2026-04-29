@@ -17,7 +17,7 @@ import { authService } from "../services/authService";
 import creatorApiClient from "../services/creatorApiClient";
 import { movieService, getImageUrl, getPlaceholderPoster } from "../services/movieService";
 
-import { useCreatorMovieList, useSettlements, useDraftSchedules, useSchedulableMovies, useConfirmedSchedules } from "../hooks/useMovies";
+import { useCreatorMovieList, useCreatorSchedules, useSchedulableMovies } from "../hooks/useMovies";
 
 export function CreatorDashboard() {
   const navigate = useNavigate();
@@ -39,15 +39,14 @@ export function CreatorDashboard() {
     ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`
     : undefined;
 
-  const { schedules, setSchedules, refetch: refetchDraftSchedules } = useDraftSchedules(dateString);
-  const { schedules: confirmedSchedules } = useConfirmedSchedules(dateString, true);
+  const { schedules, setSchedules, refetch: refetchDraftSchedules } = useCreatorSchedules(dateString);
   const { movies: schedulableMovies, refetch: refetchSchedulableMovies } = useSchedulableMovies();
 
   useEffect(() => {
     movieService.getWalletBalance()
       .then(setWallet)
       .catch((error) => console.error("지갑 잔액 로드 실패:", error));
-      
+
     movieService.getSettlements()
       .then(setSettlements)
       .catch((error) => console.error("정산 내역 로드 실패:", error));
@@ -173,11 +172,11 @@ export function CreatorDashboard() {
       toast.success("정산 요청이 완료되었습니다.");
       setWallet((prev) => prev - amount);
       setSettlementAmount("");
-      
+
       // Update settlements history
       movieService.getSettlements()
         .then(setSettlements)
-        .catch(() => {});
+        .catch(() => { });
     } catch (e: any) {
       toast.error(e.response?.data?.message || "정산 요청에 실패했습니다.");
     }
@@ -436,8 +435,8 @@ export function CreatorDashboard() {
                         <div
                           key={item.scheduleId}
                           className={`p-4 rounded-xl border flex justify-between items-center transition-all ${isDark
-                              ? "bg-slate-800/50 border-slate-700"
-                              : "bg-slate-50 border-slate-200"
+                            ? "bg-slate-800/50 border-slate-700"
+                            : "bg-slate-50 border-slate-200"
                             } ${selectedSchedules.includes(item.scheduleId) ? "ring-2 ring-purple-500 border-transparent" : ""}`}
                         >
                           <div className="flex items-center gap-4">
@@ -474,26 +473,7 @@ export function CreatorDashboard() {
                           )}
                         </div>
                       ))}
-                      {confirmedSchedules.map((item) => (
-                        <div
-                          key={`confirmed-${item.scheduleId}`}
-                          className={`p-4 rounded-xl border flex justify-between items-center transition-all ${isDark ? "bg-slate-800/50 border-slate-700" : "bg-slate-50 border-slate-200"}`}
-                        >
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <div className={`font-bold transition-colors ${isDark ? "text-white" : "text-slate-900"}`}>{item.title}</div>
-                              <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">확정</Badge>
-                            </div>
-                            <div className={`text-sm font-medium flex items-center gap-1.5 ${isDark ? "text-slate-400" : "text-purple-600"}`}>
-                              <Clock className="w-3.5 h-3.5" />
-                              {new Date(item.startTime).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
-                              {" ~ "}
-                              {new Date(item.endTime).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      {schedules.length === 0 && confirmedSchedules.length === 0 && (
+                      {schedules.length === 0 && (
                         <p className={`text-center py-8 text-sm ${isDark ? "text-slate-500" : "text-slate-400"}`}>
                           해당 날짜에 편성된 일정이 없습니다.
                         </p>
@@ -562,9 +542,9 @@ export function CreatorDashboard() {
                         try {
                           const updatedSettlement = await movieService.cancelSettlement(settlement.id);
                           setSettlements((prev) => prev.map((s) => s.id === settlement.id ? updatedSettlement : s));
-                          
+
                           // Refund to wallet
-                          movieService.getWalletBalance().then(setWallet).catch(() => {});
+                          movieService.getWalletBalance().then(setWallet).catch(() => { });
                           toast.success("정산 요청이 취소되었습니다.");
                         } catch (e: any) {
                           toast.error(e.response?.data?.message || "취소에 실패했습니다.");
@@ -584,9 +564,9 @@ export function CreatorDashboard() {
                                     label === "확정" ? "secondary" : "outline"
                                 }
                                 className={`font-semibold ${label === "완료" ? "bg-green-500/10 text-green-600 border-green-200 dark:bg-green-500/20 dark:text-green-400 dark:border-green-800" :
-                                    label === "확정" ? "bg-blue-500/10 text-blue-600 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-800" :
-                                      label === "실패" || label === "취소" ? "bg-red-500/10 text-red-500 border-red-200 dark:bg-red-500/20 dark:text-red-400 dark:border-red-800" :
-                                        "bg-yellow-500/10 text-yellow-600 border-yellow-200 dark:bg-yellow-500/20 dark:text-yellow-400 dark:border-yellow-800"
+                                  label === "확정" ? "bg-blue-500/10 text-blue-600 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-800" :
+                                    label === "실패" || label === "취소" ? "bg-red-500/10 text-red-500 border-red-200 dark:bg-red-500/20 dark:text-red-400 dark:border-red-800" :
+                                      "bg-yellow-500/10 text-yellow-600 border-yellow-200 dark:bg-yellow-500/20 dark:text-yellow-400 dark:border-yellow-800"
                                   }`}
                               >
                                 {label}
