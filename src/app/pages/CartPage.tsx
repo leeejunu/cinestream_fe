@@ -241,7 +241,7 @@ export function CartPage() {
                             onChange={() => toggleCartSelect(item.scheduleId)}
                           />
                           <img
-                            src={item.imageUrl || getPlaceholderPoster(item.movieId)}
+                            src={getImageUrl(item.imageUrl) || getPlaceholderPoster(item.movieId)}
                             alt={item.title}
                             className="w-16 h-24 object-cover rounded-lg shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                             onClick={() => item.movieId && navigate(`/movie/${item.movieId}`)}
