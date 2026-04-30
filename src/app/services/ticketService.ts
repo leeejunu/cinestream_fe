@@ -59,7 +59,10 @@ export type ScheduleStatus =
 export type SchedulePhase =
   | "CART_PERIOD"
   | "PROVISIONAL_PAYMENT"
-  | "TICKETING_PERIOD";
+  | "TICKETING_PERIOD"
+  | "LOBBY_WAITING"
+  | "STREAMING_PERIOD"
+  | "FINISHED";
 
 export interface TicketableScheduleResponse {
   scheduleId: number;
