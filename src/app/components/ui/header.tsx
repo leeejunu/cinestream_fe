@@ -2,9 +2,11 @@ import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useTheme } from "next-themes";
 import { Button } from "./button";
-import { Film, ArrowLeft, Sun, Moon, Cookie, Plus, ShoppingCart, Ticket } from "lucide-react";
+import { Film, ArrowLeft, Sun, Moon, Cookie, Plus, ShoppingCart, Ticket, User, LogOut } from "lucide-react";
 import { useUser } from "../../contexts/UserContext";
 import { cartService } from "../../services/ticketService";
+import { authService, creatorTokenStorage } from "../../services/authService";
+import { toast } from "sonner";
 
 interface HeaderProps {
   title?: string;
@@ -19,8 +21,20 @@ export function Header({ title, showBackButton, backUrl, children, rightElement 
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
-  const { user } = useUser();
+  const { user, refreshUser } = useUser();
   const [cartCount, setCartCount] = useState(0);
+  const isCreator = !!creatorTokenStorage.getAccessToken();
+
+  const handleLogout = async () => {
+    if (isCreator) {
+      await authService.creatorLogout();
+    } else {
+      await authService.logout();
+    }
+    toast.success("로그아웃 되었습니다.");
+    await refreshUser();
+    navigate("/");
+  };
 
   // 현재 경로가 /creator로 시작하면 크리에이터 스튜디오 모드
   const isCreatorMode = location.pathname.startsWith("/creator");
@@ -111,6 +125,26 @@ export function Header({ title, showBackButton, backUrl, children, rightElement 
                    </span>
                  )}
                </Button>
+             )}
+             {user && !isCreatorMode && !rightElement && (
+               <>
+                 <Button
+                   variant="ghost"
+                   size="icon"
+                   onClick={() => navigate("/mypage")}
+                   className={`transition-colors rounded-full ${isDark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"}`}
+                 >
+                   <User className="w-5 h-5" />
+                 </Button>
+                 <Button
+                   variant="ghost"
+                   size="icon"
+                   onClick={handleLogout}
+                   className={`transition-colors rounded-full ${isDark ? "text-red-400 hover:text-red-300" : "text-red-600 hover:text-red-700"}`}
+                 >
+                   <LogOut className="w-5 h-5" />
+                 </Button>
+               </>
              )}
              {rightElement}
              <Button

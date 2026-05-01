@@ -144,7 +144,7 @@ const POSTER_PLACEHOLDERS = [
 export const getPlaceholderPoster = (movieId: number): string =>
   POSTER_PLACEHOLDERS[movieId % POSTER_PLACEHOLDERS.length];
 
-export const getImageUrl = (imageUrl: string | undefined): string | undefined => {
+export const getImageUrl = (imageUrl: string | null | undefined): string | undefined => {
   if (!imageUrl) return undefined;
   if (imageUrl.startsWith("http")) return imageUrl;
   const path = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
